@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-import codecs
-import contextlib
-import cStringIO
 import itertools
 
+from .compat import open_file, open_string
 from .errors import NgxParserSyntaxError
 
 
@@ -11,7 +9,7 @@ def _iterescape(iterable):
     chars = iter(iterable)
     for char in chars:
         if char == '\\':
-            char = char + next(it)
+            char = char + next(chars)
         yield char
 
 
@@ -117,7 +115,7 @@ def _balance_braces(tokens, filename=None):
 
 def lex_file(filename):
     """Generates tokens from an nginx config file"""
-    with codecs.open(filename, encoding='utf-8') as f:
+    with open_file(filename) as f:
         it = _lex_file_object(f)
         it = _balance_braces(it, filename)
         for token, line in it:
@@ -126,9 +124,7 @@ def lex_file(filename):
 
 def lex_string(string):
     """Generates tokens from an nginx config snippet"""
-    string = string.encode('utf-8')
-    buffer = cStringIO.StringIO(string)
-    with contextlib.closing(buffer) as f:
+    with open_string(string) as f:
         it = _lex_file_object(f)
         it = _balance_braces(it, None)
         for token, line in it:
