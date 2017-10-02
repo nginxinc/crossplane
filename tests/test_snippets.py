@@ -1,37 +1,27 @@
 # -*- coding: utf-8 -*-
-from nginx_conf.lex import lex_string
+import os
+
+from nginx_conf.lex import lex_file
+
+dirname = os.path.dirname(__file__)
 
 
-MESSY_CONFIG = (
-    'user nobody;\n'
-    '# hello\\n\\\\n\\\\\\n worlddd  \\#\\\\#\\\\\\# dfsf\\n \\\\n \\\\\\n \\\n'
-    '"events" { "worker_connections" "2048"; }\n'
-    '\n'
-    '"http" {#forteen\n'
-    '    # this is a comment\n'
-    '    "access_log" off;default_type "text/plain"; error_log "off";\n'
-    '    server {\n'
-    '        "listen" "8083"            ;\n'
-    '        "return" 200 "Ser\\" \' \' ver\\\\ \\ $server_addr:\\$server_port\\n\\nTime: $time_local\\n\\n";\n'
-    '    }\n'
-    '    "server" {"listen" 8080;\n'
-    "        'root' /usr/share/nginx/html;\n"
-    '        location ~ "/hello/world;"{"return" 301 /status.html;}\n'
-    '        location /foo{}location /bar{}\n'
-    '        location /\\{\\;\\}\\ #\\ ab"c"###s {}# hello\n'
-    '        if ($request_method = P\\{O\\)\\###\\;"S"T  ){}\n'
-    '        location "/status.html" {\n'
-    '            try_files /abc/${uri} /abc/${uri}.html =404 ;\n'
-    '        }\n'
-    '        "location" "/sta;\n'
-    '                    tus" {"return" 302 /status.html;}\n'
-    '        "location" /upstream_conf { "return" 200 /status.html; }}\n'
-    '    server\n'
-    '                {}}\n'
-)
+def test_lex_simple():
+    config = os.path.join(dirname, 'configs', 'simple', 'nginx.conf')
+    tokens = list(lex_file(config))
+    assert tokens == [
+        ('events', 1), ('{', 1), ('worker_connections', 2), ('1024', 2),
+        (';', 2), ('}', 3), ('http', 5), ('{', 5), ('server', 6), ('{', 6),
+        ('listen', 7), ('127.0.0.1:8080', 7), (';', 7), ('server_name', 8),
+        ('default_server', 8), (';', 8), ('location', 9), ('/', 9), ('{', 9),
+        ('return', 10), ('200', 10), ('foo bar baz', 10), (';', 10), ('}', 11),
+        ('}', 12), ('}', 13)
+    ]
 
-def test_pass():
-    tokens = list(lex_string(MESSY_CONFIG))
+
+def test_lex_messy():
+    config = os.path.join(dirname, 'configs', 'messy', 'nginx.conf')
+    tokens = list(lex_file(config))
     assert tokens == [
         ('user', 1), ('nobody', 1), (';', 1), ('events', 3), ('{', 3),
         ('worker_connections', 3), ('2048', 3), (';', 3), ('}', 3),
