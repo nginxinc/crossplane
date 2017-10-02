@@ -6,7 +6,7 @@ from nginx_conf.lex import lex_file
 dirname = os.path.dirname(__file__)
 
 
-def test_lex_simple():
+def test_simple_config():
     config = os.path.join(dirname, 'configs', 'simple', 'nginx.conf')
     tokens = list(lex_file(config))
     assert tokens == [
@@ -19,7 +19,7 @@ def test_lex_simple():
     ]
 
 
-def test_lex_messy():
+def test_messy_config():
     config = os.path.join(dirname, 'configs', 'messy', 'nginx.conf')
     tokens = list(lex_file(config))
     assert tokens == [
