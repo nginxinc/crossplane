@@ -40,7 +40,7 @@ def main():
     args = parse_args()
 
     kwargs = {'catch_errors': args.catch}
-    if args.use_onerror:
+    if args.tb_onerror:
         kwargs['onerror'] = tb_onerror
 
     payload = parse_file(args.filename, **kwargs)
