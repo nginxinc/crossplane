@@ -1,1 +1,4 @@
-include README.rst LICENSE
+include README.rst LICENSE AUTHORS.rst tox.ini
+recursive-include tests *.py
+recursive-include scripts *.py
+global-exclude *.py[co]
