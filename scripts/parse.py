@@ -50,5 +50,6 @@ def main():
 
     print json.dumps(payload, indent=args.indent, separators=separators, sort_keys=True)
 
+
 if __name__ == '__main__':
     main()

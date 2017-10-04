@@ -3,6 +3,7 @@
 import os
 import sys
 
+from minify import enquote
 from nginx_conf.parse import parse_file
 from nginx_conf.errors import NgxParserBaseException
 
@@ -28,56 +29,6 @@ def parse_args():
         parser.error('filename: No such file or directory')
 
     return args
-
-
-def _escape(string):
-    prev, char = '', ''
-    for char in string:
-        if prev == '\\' or prev + char == '${':
-            prev += char
-            yield prev
-            continue
-        if prev == '$':
-            yield prev
-        if char not in ('\\', '$'):
-            yield char
-        prev = char
-    if char in ('\\', '$'):
-        yield char
-
-
-def needs_quotes(string):
-    if string == '':
-        return True
-    elif string in DELIMITERS:
-        return False
-
-    # lexer should throw an error when variable expansion syntax
-    # is messed up, but just wrap it in quotes for now I guess
-    chars = _escape(string)
-
-    # arguments can't start with variable expansion syntax
-    char = next(chars)
-    if char.isspace() or char in ('{', ';', '"', "'", '${'):
-        return True
-
-    expanding = False
-    for char in chars:
-        if char.isspace() or char in ('{', ';', '"', "'"):
-            return True
-        elif char == ('${' if expanding else '}'):
-            return True
-        elif char == ('}' if expanding else '${'):
-            expanding = not expanding
-
-    return char in ('\\', '$') or expanding
-
-
-def enquote(arg):
-    arg = str(arg.encode('utf-8'))
-    if needs_quotes(arg):
-        return repr(arg.decode('string_escape'))
-    return arg
 
 
 def _format(objs, padding, depth=0):

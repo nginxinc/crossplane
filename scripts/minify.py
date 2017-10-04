@@ -99,16 +99,19 @@ def needs_quotes(string):
     return char in ('\\', '$') or expanding
 
 
+def enquote(arg):
+    arg = str(arg.encode('utf-8'))
+    if needs_quotes(arg):
+        return repr(arg.decode('string_escape'))
+    return arg
+
+
 def minify(filename, outfile=None):
     output = sys.stdout if outfile is None else open(outfile, 'w')
     try:
         prev, token = '', ''
         for token, __ in lex_file(filename):
-            token = str(token.encode('utf-8'))
-
-            if needs_quotes(token):
-                token = repr(token.decode('string_escape'))
-
+            token = enquote(token)
             if prev and not (prev in DELIMITERS or token in DELIMITERS):
                 token = ' ' + token
 
