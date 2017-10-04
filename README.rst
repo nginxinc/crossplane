@@ -107,3 +107,13 @@ Before you submit a pull request, check that it meets these guidelines:
       your new functionality into a function with a docstring, and add the
       feature to the list in README.rst.
 
+Tips
+----
+
+To run a subset of tests::
+
+    tox -e <env> -- py.test <test>
+
+To run all the test environments in *parallel* (you need to ``pip install detox``)::
+
+    detox
