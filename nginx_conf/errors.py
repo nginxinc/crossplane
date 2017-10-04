@@ -8,8 +8,10 @@ class NgxParserBaseException(Exception):
         self.strerror = strerror
 
     def __str__(self):
-        return '{:s} in {:s}:{:d}'.format(*self.args)
-
+        if self.lineno is not None:
+            return '{:s} in {:s}:{:s}'.format(*self.args)
+        else:
+            return '{:s} in {:s}'.format(*self.args)
 
 class NgxParserSyntaxError(NgxParserBaseException):
     pass
