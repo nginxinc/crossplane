@@ -1,10 +1,12 @@
 
-.PHONY: help clean test
+.PHONY: help clean rebuild test-all test
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of:"
-	@echo "  clean  to remove build artifacts."
-	@echo "  test   to run tests using tox."
+	@echo "  clean     to remove build artifacts."
+	@echo "  rebuild   remove and recreate all tox virtual environments."
+	@echo "  test-all  to run tests with all required python interpreters."
+	@echo "  test      to run tests with every python interpreter available."
 
 clean:
 	@find . -path '*/.*' -prune -o -name '__pycache__' -exec rm -fr {} +
@@ -15,7 +17,19 @@ clean:
 	@find . -path '*/.*' -prune -o -name '*.c' -exec rm -fr {} +
 	@find . -path '*/.*' -prune -o -name '*~' -exec rm -fr {} +
 
-test:
+rebuild:
+	@make clean
+	rm -fr .tox
+	python -m tox --skip-missing-interpreters --recreate --notest
+	@make clean
+
+
+test-all:
 	@make clean
 	python -m tox
+	@make clean
+
+test:
+	@make clean
+	python -m tox --skip-missing-interpreters
 	@make clean
