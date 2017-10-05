@@ -3,7 +3,7 @@
 import json
 import os
 
-from nginx_conf.lex import lex_file
+from crossplane.lex import lex_file
 
 
 def parse_args():

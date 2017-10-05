@@ -33,7 +33,7 @@ Would be minified to this:
 import os
 import sys
 
-from nginx_conf.lex import lex_file
+from crossplane.lex import lex_file
 
 DELIMITERS = ('{', '}', ';')
 

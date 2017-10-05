@@ -4,8 +4,8 @@ import os
 import sys
 
 from minify import enquote
-from nginx_conf.parse import parse_file
-from nginx_conf.errors import NgxParserBaseException
+from crossplane.parse import parse_file
+from crossplane.errors import NgxParserBaseException
 
 DELIMITERS = ('{', '}', ';')
 

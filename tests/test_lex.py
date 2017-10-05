@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from nginx_conf.lex import lex_file
+from crossplane.lex import lex_file
 
 dirname = os.path.dirname(__file__)
 

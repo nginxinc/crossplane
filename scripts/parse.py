@@ -5,7 +5,7 @@ import os
 import sys
 import traceback
 
-from nginx_conf.parse import parse_file
+from crossplane.parse import parse_file
 
 
 def tb_onerror(e):

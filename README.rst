@@ -1,5 +1,5 @@
 ==========
-nginx-conf
+crossplane
 ==========
 
 Reliable and fast NGINX configuration file parser.
@@ -18,7 +18,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/nginxinc/nginx-conf/issues.
+Report bugs at https://github.com/nginxinc/crossplane/issues.
 
 If you are reporting a bug, please include:
 
@@ -41,14 +41,14 @@ is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-nginx-conf could always use more documentation, whether as part of the 
-official nginx-conf docs, in docstrings, or even on the web in blog posts,
+crossplane could always use more documentation, whether as part of the 
+official crossplane docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/nginxinc/nginx-conf/issues.
+The best way to send feedback is to file an issue at https://github.com/nginxinc/crossplane/issues.
 
 If you are proposing a feature:
 
@@ -59,13 +59,13 @@ If you are proposing a feature:
 Get Started
 -----------
 
-Ready to contribute? Here's how to set up `nginx-conf` for
+Ready to contribute? Here's how to set up `crossplane` for
 local development.
 
-#. Fork_ the `nginx-conf` repo on GitHub.
+#. Fork_ the `crossplane` repo on GitHub.
 #. Clone your fork locally::
 
-    git clone git@github.com:your_name_here/nginx-conf.git
+    git clone git@github.com:your_name_here/crossplane.git
 
 #. Create a branch for local development::
 
@@ -88,7 +88,7 @@ local development.
 
 #. Submit a pull request through the GitHub website.
 
-.. _Fork: https://github.com/nginxinc/nginx-conf/fork
+.. _Fork: https://github.com/nginxinc/crossplane/fork
 
 Pull Request Guidelines
 -----------------------
@@ -97,7 +97,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 #. The pull request should include tests.
 #. The pull request should work for CPython 2.6, 2.7, 3.3, and 3.6, and for PyPy.
-   Check https://travis-ci.org/nginxinc/nginx-conf under pull requests for 
+   Check https://travis-ci.org/nginxinc/crossplane under pull requests for 
    active pull requests or run the ``tox`` command and make sure that the 
    tests pass for all supported Python versions.
 #. Make sure to add yourself to the Contributors list in AUTHORS.rst :)

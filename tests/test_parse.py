@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from nginx_conf.parse import parse_file
+from crossplane.parse import parse_file
 
 
 def test_relative_includes():

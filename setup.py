@@ -52,13 +52,13 @@ class UploadCommand(Command):
 
 
 setup(
-    name='nginx-conf',
+    name='crossplane',
     version='0.1.0',
     description='Reliable and fast NGINX configuration file parser.',
     long_description=readme,
     author='Arie van Luttikhuizen',
     author_email='aluttik@gmail.com',
-    url='https://github.com/nginxinc/nginx-conf',
+    url='https://github.com/nginxinc/crossplane',
     packages=find_packages(exclude=['tests']),
     license='BSD',
     classifiers=[
@@ -78,7 +78,7 @@ setup(
     ],
     # TODO: Add console_scripts like:
     # entry_points={
-    #     'console_scripts': ['nginx2json=nginx_conf:cli'],
+    #     'console_scripts': ['nginx2json=crossplane:cli'],
     # },
     cmdclass={
         'upload': UploadCommand  # setup.py publish support
