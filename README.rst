@@ -23,15 +23,22 @@ Reliable and fast NGINX configuration file parser.
 Install
 =======
 
-.. code-block::
+Eventually this will be uploaded to PyPI so you will be able to install by running::
 
    pip install crossplane
+
+HOWEVER, since this is currently a private repo, you will have to clone it and install it manually with::
+
+   git clone git@github.com:nginxinc/crossplane.git
+   cd crossplane
+   pip install -e .  # `sudo -H pip install -e .` if you need permission
 
 
 Scripts
 =======
 
 There's a few different scripts that are included in this project.
+Only a few of them are documented at this point, so run them first with the ``--help`` flag.
 
 Currently, the only way to run them is to clone this repository, but soon they will be
 automatically installed when installing the package via pip.
