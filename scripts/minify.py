@@ -121,7 +121,8 @@ def minify(filename, outfile=None):
             prev = token
     finally:
         if outfile is None:
-            print
+            output.write('\n')
+            output.flush()
         else:
             output.close()
 

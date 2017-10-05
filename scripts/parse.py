@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 import json
 import os
 import sys
@@ -48,7 +50,7 @@ def main():
     # use no-space separators if not indenting for a dense json dump
     separators = (',', ':') if args.indent is None else (', ', ': ')
 
-    print json.dumps(payload, indent=args.indent, separators=separators, sort_keys=True)
+    print(json.dumps(payload, indent=args.indent, separators=separators))
 
 
 if __name__ == '__main__':

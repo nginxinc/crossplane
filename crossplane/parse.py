@@ -135,9 +135,9 @@ def parse_file(filename, onerror=None, catch_errors=False):
             tokens = lex_file(fname)
             parsing = {
                 'file': fname,
+                'status': 'ok',
                 'errors': [],
-                'parsed': [],
-                'status': 'ok'
+                'parsed': []
             }
             try:
                 parsing['parsed'] = _parse(parsing, tokens, ctx=ctx)
