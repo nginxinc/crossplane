@@ -4,13 +4,21 @@ crossplane
 
 Reliable and fast NGINX configuration file parser.
 
-* `Install`_
-* `Scripts`_
-   * `scripts/parse.py`_
-   * `scripts/lex.py`_
-   * `scripts/format.py`_
-   * `scripts/minify.py`_
-* `Contributing`_
+- `Install`_
+- `Scripts`_
+
+  - `scripts/parse.py`_
+  - `scripts/lex.py`_
+  - `scripts/format.py`_
+  - `scripts/minify.py`_
+
+- `Contributing`_
+
+  - `Types of Contributions`_
+  - `Get Started`_
+  - `Pull Request Guidelines`_
+  - `Tips`_
+
 
 Install
 =======
