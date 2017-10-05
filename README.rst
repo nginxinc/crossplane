@@ -4,6 +4,188 @@ crossplane
 
 Reliable and fast NGINX configuration file parser.
 
+* `Install`_
+* `Scripts`_
+   * `scripts/parse.py`_
+   * `scripts/lex.py`_
+   * `scripts/format.py`_
+   * `scripts/minify.py`_
+* `Contributing`_
+
+Install
+=======
+
+.. code-block::
+
+   pip install crossplane
+
+
+Scripts
+=======
+
+There's a few different scripts that are included in this project.
+
+Currently, the only way to run them is to clone this repository, but soon they will be
+automatically installed when installing the package via pip.
+
+
+scripts/parse.py
+----------------
+
+.. code-block::
+
+   usage: parse.py [-h] [--no-catch] [--tb-onerror] [-i num] filename
+
+   Prints a JSON payload for a given nginx config
+
+   positional arguments:
+     filename              the nginx config file to parse
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     --no-catch            only collect first error in file
+     -i num, --indent num  number of spaces to indent output
+
+Example
+~~~~~~~
+
+This nginx config is at ``/etc/nginx/nginx.conf``:
+
+.. code-block:: nginx
+
+   events {
+       worker_connections 1024;
+   }
+
+   http {
+       server {
+           listen       127.0.0.1:8080;
+           server_name  default_server;
+           location / {
+               try_files 'foo bar' baz;
+           }
+       }
+   }
+
+The prettified JSON output would look like this:
+
+.. code-block:: js
+
+   {
+     "status": "ok",
+     "errors": [],
+     "config": [
+       {
+         "file": "/etc/nginx/nginx.conf",
+         "status": "ok",
+         "errors": [],
+         "parsed": [
+           {
+             "directive": "events",
+             "line": 1,
+             "args": [],
+             "block": [
+               {
+                 "directive": "worker_connections",
+                 "line": 2,
+                 "args": ["1024"]
+               }
+             ]
+           },
+           {
+             "directive": "http",
+             "line": 5,
+             "args": [],
+             "block": [
+               {
+                 "directive": "server",
+                 "line": 6,
+                 "args": [],
+                 "block": [
+                   {
+                     "directive": "listen",
+                     "line": 7,
+                     "args": ["127.0.0.1:8080"]
+                   },
+                   {
+                     "directive": "server_name",
+                     "line": 8,
+                     "args": ["default_server"]
+                   },
+                   {
+                     "directive": "location",
+                     "line": 9,
+                     "args": ["/"],
+                     "block": [
+                       {
+                         "directive": "try_files",
+                         "line": 10,
+                         "args": ["foo bar", "baz"]
+                       }
+                     ]
+                   }
+                 ]
+               }
+             ]
+           }
+         ]
+       }
+     ]
+   }
+
+Schema
+~~~~~~
+**Response Object**
+
+.. code-block:: js
+
+    {
+        "status": String, // "ok" or "failed" if "errors" is not empty
+        "errors": Array,  // aggregation of "errors" from Config objects
+        "config": Array   // Array of Config objects
+    }
+
+**Config Object**
+
+.. code-block:: js
+
+    {
+        "file": String,   // the full path of the config file
+        "status": String, // "ok" or "failed" if errors is not empty array
+        "errors": Array,  // Array of Error objects
+        "parsed": Array   // Array of Directive objects
+    }
+
+**Directive Object**
+
+.. code-block:: js
+
+    {
+        "directive": String, // the name of the directive
+        "line": Integer,     // line number the directive started on
+        "args": Array        // Array of String arguments
+    }
+
+.. note::
+
+   If this is an ``include`` directive, an ``"includes"`` value will be used that holds an Array of paths to the configs that are included by this directive.
+
+   If this is a block directive, a ``"block"`` value will be used that holds an Array of more Directive Objects that define the block context.
+
+
+scripts/lex.py
+--------------
+*Documentation in progress.*
+
+scripts/format.py
+-----------------
+*Documentation in progress.*
+
+scripts/minify.py
+-----------------
+*Documentation in progress.*
+
+
 Contributing
 ============
 
@@ -117,3 +299,5 @@ To run a subset of tests::
 To run all the test environments in *parallel* (you need to ``pip install detox``)::
 
     detox
+
+
