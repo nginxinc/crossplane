@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class NgxParserBaseException(Exception):
     def __init__(self, strerror, filename, lineno):
         self.args = (strerror, filename, lineno)
@@ -12,6 +13,7 @@ class NgxParserBaseException(Exception):
             return '{:s} in {:s}:{:s}'.format(*self.args)
         else:
             return '{:s} in {:s}'.format(*self.args)
+
 
 class NgxParserSyntaxError(NgxParserBaseException):
     pass
