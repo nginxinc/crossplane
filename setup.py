@@ -76,10 +76,11 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
-    # TODO: Add console_scripts like:
-    # entry_points={
-    #     'console_scripts': ['nginx2json=crossplane:cli'],
-    # },
+    entry_points={
+        'console_scripts': [
+            'crossplane = crossplane.__main__:main'
+        ],
+    },
     cmdclass={
         'upload': UploadCommand  # setup.py publish support
     }
