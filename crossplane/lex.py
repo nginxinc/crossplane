@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import itertools
 
-from compat import open_file, open_string
-from errors import NgxParserSyntaxError
+from .compat import open_file, open_string
+from .errors import NgxParserSyntaxError
 
 
 def _iterescape(iterable):

@@ -2,9 +2,9 @@
 import glob
 import os
 
-from lex import lex_file
-from analyze import analyze, enter_block_ctx
-from errors import NgxParserDirectiveError
+from .lex import lex_file
+from .analyze import analyze, enter_block_ctx
+from .errors import NgxParserDirectiveError
 
 
 # TODO: raise special errors for invalid "if" args

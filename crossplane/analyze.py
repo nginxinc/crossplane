@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from errors import \
+from .errors import \
     NgxParserDirectiveContextError, NgxParserDirectiveArgumentsError
 
 # bit masks for different directive argument styles

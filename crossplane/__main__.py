@@ -6,9 +6,9 @@ import sys
 from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
 from traceback import format_exception
 
-from lex import lex_file
-from parse import parse_file
-from errors import NgxParserBaseException
+from .lex import lex_file
+from .parse import parse_file
+from .errors import NgxParserBaseException
 
 DELIMITERS = ('{', '}', ';')
 
