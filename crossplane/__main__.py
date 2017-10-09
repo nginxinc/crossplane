@@ -71,8 +71,30 @@ def _enquote(arg):
     return arg
 
 
+def parse(filename, out, indent=None, catch=None, tb_onerror=None):
+    if tb_onerror:
+        payload = parse_file(filename, catch_errors=catch, onerror=_tb_onerror)
+    else:
+        payload = parse_file(filename, catch_errors=catch)
+
+    if indent is None:
+        out.write(json.dumps(payload, separators=(',', ':')) + '\n')
+    else:
+        out.write(json.dumps(payload, indent=indent) + '\n')
+
+
+def lex(filename, out, indent=None, line_numbers=False):
+    payload = list(lex_file(filename))
+    if not line_numbers:
+        payload = [token for token, lineno in payload]
+
+    if indent is None:
+        out.write(json.dumps(payload, separators=(',', ':')) + '\n')
+    else:
+        out.write(json.dumps(payload, indent=indent) + '\n')
+
+
 def minify(filename, out):
-    """removes all whitespace from an nginx config"""
     prev, token = '', ''
     for token, __ in lex_file(filename):
         token = _enquote(token)
@@ -84,7 +106,6 @@ def minify(filename, out):
 
 
 def format(filename, out, indent=None, tabs=False):
-    """formats an nginx config file"""
     padding = '\t' if tabs else ' ' * indent
 
     def _format(objs, depth):
@@ -120,42 +141,6 @@ def format(filename, out, indent=None, tabs=False):
         raise NgxParserBaseException(e['error'], e['file'], e['line'])
 
 
-def lex(filename, out, indent=None, line_numbers=False):
-    """lexes tokens from an nginx config file"""
-    payload = []
-    for token, lineno in lex_file(filename):
-        if line_numbers:
-            item = (token.decode('string_escape'), lineno)
-        else:
-            item = token.decode('string_escape')
-
-        payload.append(item)
-
-    if indent is None:
-        dump = json.dumps(payload, separators=(',', ':'))
-    else:
-        dump = json.dumps(payload, indent=indent)
-
-    out.write(dump + '\n')
-
-
-def parse(filename, out, indent=None, catch=None, tb_onerror=None):
-    """parses a json payload for an nginx config"""
-
-    kwargs = {'catch_errors': catch}
-    if tb_onerror:
-        payload = parse_file(filename, catch_errors=catch, onerror=_tb_onerror)
-    else:
-        payload = parse_file(filename, catch_errors=catch)
-
-    if indent is None:
-        dump = json.dumps(payload, separators=(',', ':'))
-    else:
-        dump = json.dumps(payload, indent=indent)
-
-    out.write(dump + '\n')
-
-
 class _SubparserHelpFormatter(RawDescriptionHelpFormatter):
     def _format_action(self, action):
         line = super(RawDescriptionHelpFormatter, self)._format_action(action)
@@ -170,7 +155,7 @@ class _SubparserHelpFormatter(RawDescriptionHelpFormatter):
         return line
 
 
-def parse_args():
+def parse_args(args=None):
     parser = ArgumentParser(
         formatter_class=_SubparserHelpFormatter,
         description='various operations for nginx config files',
@@ -178,31 +163,31 @@ def parse_args():
     )
     subparsers = parser.add_subparsers(title='commands')
 
-    def create_subparser(function):
-        name, help = function.__name__, function.__doc__
+    def create_subparser(function, help):
+        name = function.__name__
         prog = 'crossplane ' + name
         p = subparsers.add_parser(name, prog=prog, help=help, description=help)
         p.set_defaults(_subcommand=function)
         return p
 
-    p = create_subparser(parse)
+    p = create_subparser(parse, 'parses a json payload for an nginx config')
     p.add_argument('filename', help='the nginx config file')
     p.add_argument('-o', '--out', type=FileType('w'), default='-', help='write output to a file')
     p.add_argument('-i', '--indent', type=int, metavar='NUM', help='number of spaces to indent output')
     p.add_argument('--no-catch', action='store_false', dest='catch', help='only collect first error in file')
     p.add_argument('--tb-onerror', action='store_true', help='include tracebacks in config errors')
 
-    p = create_subparser(lex)
+    p = create_subparser(lex, 'lexes tokens from an nginx config file')
     p.add_argument('filename', help='the nginx config file')
     p.add_argument('-o', '--out', type=FileType('w'), default='-', help='write output to a file')
     p.add_argument('-i', '--indent', type=int, metavar='NUM', help='number of spaces to indent output')
     p.add_argument('-n', '--line-numbers', action='store_true', help='include line numbers in json payload')
 
-    p = create_subparser(minify)
+    p = create_subparser(minify, 'removes all whitespace from an nginx config')
     p.add_argument('filename', help='the nginx config file')
     p.add_argument('-o', '--out', type=FileType('w'), default='-', help='write output to a file')
 
-    p = create_subparser(format)
+    p = create_subparser(format, 'formats an nginx config file')
     p.add_argument('filename', help='the nginx config file')
     p.add_argument('-o', '--out', type=FileType('w'), default='-', help='write output to a file')
     g = p.add_mutually_exclusive_group()
@@ -210,17 +195,16 @@ def parse_args():
     g.add_argument('-t', '--tabs', action='store_true', help='indent with tabs instead of spaces')
 
     def help(command):
-        """show help for commands"""
         if command not in parser._actions[1].choices:
             parser.error('unknown command %r' % command)
         else:
             parser._actions[1].choices[command].print_help()
 
-    p = create_subparser(help)
+    p = create_subparser(help, 'show help for commands')
     p.add_argument('command', help='command to show help for')
 
-    args = parser.parse_args()
-    return args
+    parsed = parser.parse_args(args=args)
+    return parsed
 
 
 def main():
