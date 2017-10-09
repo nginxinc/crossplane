@@ -5,12 +5,12 @@ crossplane
 Reliable and fast NGINX configuration file parser.
 
 - `Install`_
-- `Scripts`_
+- `Command line`_
 
-  - `scripts/parse.py`_
-  - `scripts/lex.py`_
-  - `scripts/format.py`_
-  - `scripts/minify.py`_
+  - `crossplane parse`_
+  - `crossplane lex`_
+  - `crossplane format`_
+  - `crossplane minify`_
 
 - `Contributing`_
 
@@ -34,32 +34,47 @@ HOWEVER, since this is currently a private repo, you will have to clone it and i
    pip install -e .  # `sudo -H pip install -e .` if you need permission
 
 
-Scripts
-=======
+Command line
+============
 
-There's a few different scripts that are included in this project.
-Only a few of them are documented at this point, so run them first with the ``--help`` flag.
+.. code-block::
 
-Currently, the only way to run them is to clone this repository, but soon they will be
+   usage: crossplane <command> [options]
+
+   various operations for nginx config files
+
+   optional arguments:
+     -h, --help            show this help message and exit
+
+   commands:
+     parse                 parses a json payload for an nginx config
+     lex                   lexes tokens from an nginx config file
+     minify                removes all whitespace from an nginx config
+     format                formats an nginx config file
+     help                  show help for commands
+
+Currently, the only way to run this script is to clone this repository, but soon it will be
 automatically installed when installing the package via pip.
 
-
-scripts/parse.py
+crossplane parse
 ----------------
 
 .. code-block::
 
-   usage: parse.py [-h] [--no-catch] [--tb-onerror] [-i num] filename
+   usage: crossplane parse [-h] [-o OUT] [-i NUM] [--no-catch] [--tb-onerror]
+                           filename
 
-   Prints a JSON payload for a given nginx config
+   parses a json payload for an nginx config
 
    positional arguments:
-     filename              the nginx config file to parse
+     filename              the nginx config file
 
    optional arguments:
      -h, --help            show this help message and exit
+     -o OUT, --out OUT     write output to a file
+     -i NUM, --indent NUM  number of spaces to indent output
      --no-catch            only collect first error in file
-     -i num, --indent num  number of spaces to indent output
+     --tb-onerror          include tracebacks in config errors
 
 Example
 ~~~~~~~
@@ -188,15 +203,15 @@ Schema
    If this is a block directive, a ``"block"`` value will be used that holds an Array of more Directive Objects that define the block context.
 
 
-scripts/lex.py
+crossplane lex
 --------------
 *Documentation in progress.*
 
-scripts/format.py
+crossplane format
 -----------------
 *Documentation in progress.*
 
-scripts/minify.py
+crossplane minify
 -----------------
 *Documentation in progress.*
 
