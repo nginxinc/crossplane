@@ -4,9 +4,9 @@ import os
 from crossplane.parse import parse_file
 
 
-def test_relative_includes():
+def test_includes_globbed():
     here = os.path.dirname(__file__)
-    dirname = os.path.join(here, 'configs', 'relative-includes')
+    dirname = os.path.join(here, 'configs', 'includes-globbed')
     config = os.path.join(dirname, 'nginx.conf')
     payload = parse_file(config)
     assert payload == {
