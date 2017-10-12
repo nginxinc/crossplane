@@ -19,7 +19,7 @@ def _prepare_if_args(stmt):
         args[:] = args[start:end]
 
 
-def parse_file(filename, onerror=None, catch_errors=False):
+def parse_file(filename, onerror=None, catch_errors=True):
     """Parses an nginx config file and returns a nested dict payload"""
     config_dir = os.path.dirname(filename)
 
@@ -34,11 +34,12 @@ def parse_file(filename, onerror=None, catch_errors=False):
 
     def _handle_error(parsing, e):
         """Adds representaions of an error to the payload"""
-        message = e.strerror if hasattr(e, 'strerror') else e.message
+        file = parsing['file']
+        error = str(e)
         line = getattr(e, 'lineno', None)
 
-        parsing_error = {'error': message, 'line': line}
-        payload_error = dict(parsing_error, file=parsing['file'])
+        parsing_error = {'error': error, 'line': line}
+        payload_error = {'file': file, 'error': error, 'line': line}
         if onerror is not None:
             payload_error['callback'] = onerror(e)
 
@@ -47,15 +48,6 @@ def parse_file(filename, onerror=None, catch_errors=False):
 
         payload['status'] = 'failed'
         payload['errors'].append(payload_error)
-
-    def _nginx_glob(pattern):
-        """Helper function that mimics how nginx does globbing"""
-        if not os.path.isabs(pattern):
-            pattern = os.path.join(config_dir, pattern)
-        if not glob.has_magic(pattern):
-            return [pattern]
-        else:
-            return glob.glob(pattern)
 
     def _parse(parsing, tokens, ctx=(), consume=False):
         """Recursively parses nginx config contexts"""
@@ -111,7 +103,26 @@ def parse_file(filename, onerror=None, catch_errors=False):
 
             # add "includes" to the payload if this is an include statement
             if stmt['directive'] == 'include':
-                stmt['includes'] = _nginx_glob(args[0])
+                pattern = args[0]
+                if not os.path.isabs(args[0]):
+                    pattern = os.path.join(config_dir, args[0])
+
+                if glob.has_magic(pattern):
+                    stmt['includes'] = glob.glob(pattern)
+                else:
+                    try:
+                        # if the file pattern was explicit, nginx will check
+                        # that the included file can be opened and read
+                        open(str(pattern)).close()
+                        stmt['includes'] = [pattern]
+                    except Exception as e:
+                        e.lineno = stmt['line']
+                        if catch_errors:
+                            _handle_error(parsing, e)
+                            continue
+                        else:
+                            raise e
+
                 includes.extend((f, ctx) for f in stmt['includes'])
 
             # if this statement terminated with '{' then it is a block

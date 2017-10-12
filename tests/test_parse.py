@@ -4,6 +4,109 @@ import os
 from crossplane.parse import parse_file
 
 
+def test_includes_regular():
+    here = os.path.dirname(__file__)
+    dirname = os.path.join(here, 'configs', 'includes-regular')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = parse_file(config)
+    assert payload == {
+        'status': 'failed',
+        'errors': [
+            {
+                'file': os.path.join(dirname, 'conf.d', 'server.conf'),
+                'error': '[Errno 2] No such file or directory: %r' % os.path.join(dirname, 'bar.conf'),
+                'line': 5
+            }
+        ],
+        'config': [
+            {
+                'file': os.path.join(dirname, 'nginx.conf'),
+                'status': 'ok',
+                'errors': [],
+                'parsed': [
+                    {
+                        'directive': 'events',
+                        'line': 1,
+                        'args': [],
+                        'block': []
+                    },
+                    {
+                        'directive': 'http',
+                        'line': 2,
+                        'args': [],
+                        'block': [
+                            {
+                                'directive': 'include',
+                                'line': 3,
+                                'args': ['conf.d/server.conf'],
+                                'includes': [
+                                    os.path.join(dirname, 'conf.d', 'server.conf')
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                'file': os.path.join(dirname, 'conf.d', 'server.conf'),
+                'status': 'failed',
+                'errors': [
+                    {
+                        'error': '[Errno 2] No such file or directory: %r' % os.path.join(dirname, 'bar.conf'),
+                        'line': 5
+                    }
+                ],
+                'parsed': [
+                    {
+                        'directive': 'server',
+                        'line': 1,
+                        'args': [],
+                        'block': [
+                            {
+                                'directive': 'listen',
+                                'line': 2,
+                                'args': ['127.0.0.1:8080']
+                            },
+                            {
+                                'directive': 'server_name',
+                                'line': 3,
+                                'args': ['default_server']
+                            },
+                            {
+                                'directive': 'include',
+                                'line': 4,
+                                'args': ['foo.conf'],
+                                'includes': [
+                                    os.path.join(dirname, 'foo.conf')
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                'file': os.path.join(dirname, 'foo.conf'),
+                'status': 'ok',
+                'errors': [],
+                'parsed': [
+                    {
+                        'directive': 'location',
+                        'line': 1,
+                        'args': ['/foo'],
+                        'block': [
+                            {
+                                'directive': 'return',
+                                'line': 2,
+                                'args': ['200', 'foo']
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+
+
 def test_includes_globbed():
     here = os.path.dirname(__file__)
     dirname = os.path.join(here, 'configs', 'includes-globbed')
