@@ -204,6 +204,11 @@ def parse_args(args=None):
     p.add_argument('command', help='command to show help for')
 
     parsed = parser.parse_args(args=args)
+
+    # this addresses a bug  that was added to argparse in Python 3.3
+    if not parsed.__dict__:
+        parser.error('too few arguments')
+
     return parsed
 
 
