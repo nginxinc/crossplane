@@ -198,7 +198,7 @@ Schema
 
 .. note::
 
-   If this is an ``include`` directive, an ``"includes"`` value will be used that holds an Array of paths to the configs that are included by this directive.
+   If this is an ``include`` directive, an ``"includes"`` value will be used that holds an Array of indices of the configs that are included by this directive.
 
    If this is a block directive, a ``"block"`` value will be used that holds an Array of more Directive Objects that define the block context.
 
@@ -253,7 +253,7 @@ is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-crossplane could always use more documentation, whether as part of the 
+crossplane could always use more documentation, whether as part of the
 official crossplane docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
@@ -309,8 +309,8 @@ Before you submit a pull request, check that it meets these guidelines:
 
 #. The pull request should include tests.
 #. The pull request should work for CPython 2.6, 2.7, 3.3, and 3.6, and for PyPy.
-   Check https://travis-ci.org/nginxinc/crossplane under pull requests for 
-   active pull requests or run the ``tox`` command and make sure that the 
+   Check https://travis-ci.org/nginxinc/crossplane under pull requests for
+   active pull requests or run the ``tox`` command and make sure that the
    tests pass for all supported Python versions.
 #. Make sure to add yourself to the Contributors list in AUTHORS.rst :)
 

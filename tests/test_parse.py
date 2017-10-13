@@ -39,9 +39,7 @@ def test_includes_regular():
                                 'directive': 'include',
                                 'line': 3,
                                 'args': ['conf.d/server.conf'],
-                                'includes': [
-                                    os.path.join(dirname, 'conf.d', 'server.conf')
-                                ]
+                                'includes': [1]
                             }
                         ]
                     }
@@ -76,9 +74,7 @@ def test_includes_regular():
                                 'directive': 'include',
                                 'line': 4,
                                 'args': ['foo.conf'],
-                                'includes': [
-                                    os.path.join(dirname, 'foo.conf')
-                                ]
+                                'includes': [2]
                             }
                         ]
                     }
@@ -131,9 +127,7 @@ def test_includes_globbed():
                         'directive': 'include',
                         'line': 2,
                         'args': ['http.conf'],
-                        'includes': [
-                            os.path.join(dirname, 'http.conf')
-                        ]
+                        'includes': [1]
                     }
                 ]
             },
@@ -151,10 +145,7 @@ def test_includes_globbed():
                                 'directive': 'include',
                                 'line': 2,
                                 'args': ['servers/*.conf'],
-                                'includes': [
-                                    os.path.join(dirname, 'servers', 'server1.conf'),
-                                    os.path.join(dirname, 'servers', 'server2.conf')
-                                ]
+                                'includes': [2, 3]
                             }
                         ]
                     }
@@ -179,10 +170,7 @@ def test_includes_globbed():
                                 'directive': 'include',
                                 'args': ['locations/*.conf'],
                                 'line': 3,
-                                'includes': [
-                                    os.path.join(dirname, 'locations', 'location1.conf'),
-                                    os.path.join(dirname, 'locations', 'location2.conf')
-                                ]
+                                'includes': [4, 5]
                             }
                         ]
                     }
@@ -207,10 +195,7 @@ def test_includes_globbed():
                                 'directive': 'include',
                                 'args': ['locations/*.conf'],
                                 'line': 3,
-                                'includes': [
-                                    os.path.join(dirname, 'locations', 'location1.conf'),
-                                    os.path.join(dirname, 'locations', 'location2.conf')
-                                ]
+                                'includes': [4, 5]
                             }
                         ]
                     }

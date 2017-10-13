@@ -29,8 +29,9 @@ def parse_file(filename, onerror=None, catch_errors=True):
         'config': [],
     }
 
-    includes = []  # stores (config filename, config context) tuples
-    included = set()
+    # start with the main nginx config file/context
+    includes = [(filename, ())]  # stores (filename, config context) tuples
+    included = {filename: 0} # stores {filename: array index} map
 
     def _handle_error(parsing, e):
         """Adds representaions of an error to the payload"""
@@ -107,14 +108,15 @@ def parse_file(filename, onerror=None, catch_errors=True):
                 if not os.path.isabs(args[0]):
                     pattern = os.path.join(config_dir, args[0])
 
+                stmt['includes'] = []
                 if glob.has_magic(pattern):
-                    stmt['includes'] = glob.glob(pattern)
+                    fnames = glob.glob(pattern)
                 else:
                     try:
                         # if the file pattern was explicit, nginx will check
                         # that the included file can be opened and read
                         open(str(pattern)).close()
-                        stmt['includes'] = [pattern]
+                        fnames = [pattern]
                     except Exception as e:
                         e.lineno = stmt['line']
                         if catch_errors:
@@ -123,7 +125,14 @@ def parse_file(filename, onerror=None, catch_errors=True):
                         else:
                             raise e
 
-                includes.extend((f, ctx) for f in stmt['includes'])
+                for fname in fnames:
+                    # the included set keeps files from being parsed twice
+                    # TODO: handle files included from multiple contexts
+                    if fname not in included:
+                        included[fname] = len(includes)
+                        includes.append((fname, ctx))
+                    index = included[fname]
+                    stmt['includes'].append(index)
 
             # if this statement terminated with '{' then it is a block
             if token == '{':
@@ -134,27 +143,20 @@ def parse_file(filename, onerror=None, catch_errors=True):
 
         return parsed
 
-    # start with the main nginx config file/context
-    includes.append((filename, ()))
-
     # the includes list grows as "include" directives are found in _parse
     for fname, ctx in includes:
-        # the included set keeps files from being parsed twice
-        # TODO: handle cases where files are included from multiple contexts
-        if fname not in included:
-            included.add(fname)
-            tokens = lex_file(fname)
-            parsing = {
-                'file': fname,
-                'status': 'ok',
-                'errors': [],
-                'parsed': []
-            }
-            try:
-                parsing['parsed'] = _parse(parsing, tokens, ctx=ctx)
-            except Exception as e:
-                _handle_error(parsing, e)
+        tokens = lex_file(fname)
+        parsing = {
+            'file': fname,
+            'status': 'ok',
+            'errors': [],
+            'parsed': []
+        }
+        try:
+            parsing['parsed'] = _parse(parsing, tokens, ctx=ctx)
+        except Exception as e:
+            _handle_error(parsing, e)
 
-            payload['config'].append(parsing)
+        payload['config'].append(parsing)
 
     return payload
