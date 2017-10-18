@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
 
-from crossplane.parse import parse_file
+import crossplane
+
+here = os.path.dirname(__file__)
 
 
 def test_includes_regular():
-    here = os.path.dirname(__file__)
     dirname = os.path.join(here, 'configs', 'includes-regular')
     config = os.path.join(dirname, 'nginx.conf')
-    payload = parse_file(config)
+    payload = crossplane.parse(config)
     assert payload == {
         'status': 'failed',
         'errors': [
@@ -104,10 +105,9 @@ def test_includes_regular():
 
 
 def test_includes_globbed():
-    here = os.path.dirname(__file__)
     dirname = os.path.join(here, 'configs', 'includes-globbed')
     config = os.path.join(dirname, 'nginx.conf')
-    payload = parse_file(config)
+    payload = crossplane.parse(config)
     assert payload == {
         'status': 'ok',
         'errors': [],

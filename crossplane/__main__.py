@@ -1,25 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import json
 import sys
 
 from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
 from traceback import format_exception
 
-from .lex import lex_file
-from .parse import parse_file
+from .lexer import lex as lex_file
+from .parser import parse as parse_file
 from .errors import NgxParserBaseException
-from .compat import PY2, PY3
+from .compat import PY2, json
 
 DELIMITERS = ('{', '}', ';')
-
-
-def _tb_onerror(e):
-    cls, exc, tb = sys.exc_info()
-    try:
-        return format_exception(cls, exc, tb, 10)
-    finally:
-        del cls, exc, tb
 
 
 def _escape(string):
@@ -66,36 +57,37 @@ def _needs_quotes(string):
 
 
 def _enquote(arg):
-    if PY2:
-        arg = str(arg.encode('utf-8'))
+    arg = str(arg.encode('utf-8') if PY2 else arg)
     if _needs_quotes(arg):
-        if PY2:
-            arg = arg.decode('string_escape')
-        return repr(arg)
+        arg = repr(arg.decode('string_escape') if PY2 else arg)
     return arg
 
 
-def parse(filename, out, indent=None, catch=None, tb_onerror=None):
-    if tb_onerror:
-        payload = parse_file(filename, catch_errors=catch, onerror=_tb_onerror)
-    else:
-        payload = parse_file(filename, catch_errors=catch)
-
+def _dump_payload(obj, fp, indent):
+    kwargs = {'indent': indent}
     if indent is None:
-        out.write(json.dumps(payload, separators=(',', ':')) + '\n')
-    else:
-        out.write(json.dumps(payload, indent=indent) + '\n')
+        kwargs['separators'] = ',', ':'
+    fp.write(json.dumps(obj, **kwargs) + '\n')
+
+
+def parse(filename, out, indent=None, catch=None, tb_onerror=None):
+    def callback(e):
+        exc = sys.exc_info() + (10,)
+        return ''.join(format_exception(*exc)).rstrip()
+
+    kwargs = {'catch_errors': catch}
+    if tb_onerror:
+        kwargs['onerror'] = callback
+
+    payload = parse_file(filename, **kwargs)
+    _dump_payload(payload, out, indent=indent)
 
 
 def lex(filename, out, indent=None, line_numbers=False):
     payload = list(lex_file(filename))
     if not line_numbers:
         payload = [token for token, lineno in payload]
-
-    if indent is None:
-        out.write(json.dumps(payload, separators=(',', ':')) + '\n')
-    else:
-        out.write(json.dumps(payload, indent=indent) + '\n')
+    _dump_payload(payload, out, indent=indent)
 
 
 def minify(filename, out):

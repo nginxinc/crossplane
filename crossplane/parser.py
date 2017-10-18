@@ -2,8 +2,8 @@
 import glob
 import os
 
-from .lex import lex_file
-from .analyze import analyze, enter_block_ctx
+from .lexer import lex
+from .analyzer import analyze, enter_block_ctx
 from .errors import NgxParserDirectiveError
 
 
@@ -19,7 +19,7 @@ def _prepare_if_args(stmt):
         args[:] = args[start:end]
 
 
-def parse_file(filename, onerror=None, catch_errors=True):
+def parse(filename, onerror=None, catch_errors=True):
     """Parses an nginx config file and returns a nested dict payload"""
     config_dir = os.path.dirname(filename)
 
@@ -145,7 +145,7 @@ def parse_file(filename, onerror=None, catch_errors=True):
 
     # the includes list grows as "include" directives are found in _parse
     for fname, ctx in includes:
-        tokens = lex_file(fname)
+        tokens = lex(fname)
         parsing = {
             'file': fname,
             'status': 'ok',

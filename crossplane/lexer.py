@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import itertools
+import io
 
-from .compat import open_file, open_string
 from .errors import NgxParserSyntaxError
 
 
@@ -113,19 +113,10 @@ def _balance_braces(tokens, filename=None):
         raise NgxParserSyntaxError(reason, filename, line)
 
 
-def lex_file(filename):
+def lex(filename):
     """Generates tokens from an nginx config file"""
-    with open_file(filename) as f:
+    with io.open(filename, mode='r', encoding='utf-8') as f:
         it = _lex_file_object(f)
         it = _balance_braces(it, filename)
-        for token, line in it:
-            yield token, line
-
-
-def lex_string(string):
-    """Generates tokens from an nginx config snippet"""
-    with open_string(string) as f:
-        it = _lex_file_object(f)
-        it = _balance_braces(it, None)
         for token, line in it:
             yield token, line

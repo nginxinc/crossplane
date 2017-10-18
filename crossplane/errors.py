@@ -10,9 +10,9 @@ class NgxParserBaseException(Exception):
 
     def __str__(self):
         if self.lineno is not None:
-            return '{:s} in {:s}:{:s}'.format(*self.args)
+            return '{} in {}:{}'.format(*self.args)
         else:
-            return '{:s} in {:s}'.format(*self.args)
+            return '{} in {}'.format(*self.args)
 
 
 class NgxParserSyntaxError(NgxParserBaseException):
