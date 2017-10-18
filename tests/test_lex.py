@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 import os
 
-from crossplane.lex import lex_file
+import crossplane
 
-dirname = os.path.dirname(__file__)
+here = os.path.dirname(__file__)
 
 
 def test_simple_config():
-    config = os.path.join(dirname, 'configs', 'simple', 'nginx.conf')
-    tokens = list(lex_file(config))
-    assert tokens == [
+    dirname = os.path.join(here, 'configs', 'simple')
+    config = os.path.join(dirname, 'nginx.conf')
+    tokens = crossplane.lex(config)
+    assert list(tokens) == [
         ('events', 1), ('{', 1), ('worker_connections', 2), ('1024', 2),
         (';', 2), ('}', 3), ('http', 5), ('{', 5), ('server', 6), ('{', 6),
         ('listen', 7), ('127.0.0.1:8080', 7), (';', 7), ('server_name', 8),
@@ -20,9 +21,10 @@ def test_simple_config():
 
 
 def test_messy_config():
-    config = os.path.join(dirname, 'configs', 'messy', 'nginx.conf')
-    tokens = list(lex_file(config))
-    assert tokens == [
+    dirname = os.path.join(here, 'configs', 'messy')
+    config = os.path.join(dirname, 'nginx.conf')
+    tokens = crossplane.lex(config)
+    assert list(tokens) == [
         ('user', 1), ('nobody', 1), (';', 1), ('events', 3), ('{', 3),
         ('worker_connections', 3), ('2048', 3), (';', 3), ('}', 3),
         ('http', 5), ('{', 5), ('access_log', 7), ('off', 7), (';', 7),
