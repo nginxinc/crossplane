@@ -5,12 +5,17 @@ crossplane
 Reliable and fast NGINX configuration file parser.
 
 - `Install`_
-- `Command line`_
+- `Command Line Tool`_
 
   - `crossplane parse`_
   - `crossplane lex`_
   - `crossplane format`_
   - `crossplane minify`_
+
+- `Python Module`_
+
+  - `crossplane.parse()`_
+  - `crossplane.lex()`_
 
 - `Contributing`_
 
@@ -34,8 +39,8 @@ HOWEVER, since this is currently a private repo, you will have to clone it and i
    pip install -e .  # `sudo -H pip install -e .` if you need permission
 
 
-Command line
-============
+Command Line Tool
+=================
 
 .. code-block::
 
@@ -59,6 +64,9 @@ automatically installed when installing the package via pip.
 crossplane parse
 ----------------
 
+This command will take a path to a main NGINX config file as input, then parse the entire config into
+the schema defined below, and dumps the entire thing as a JSON payload.
+
 .. code-block::
 
    usage: crossplane parse [-h] [-o OUT] [-i NUM] [--no-catch] [--tb-onerror]
@@ -76,95 +84,9 @@ crossplane parse
      --no-catch            only collect first error in file
      --tb-onerror          include tracebacks in config errors
 
-Example
-~~~~~~~
-
-This nginx config is at ``/etc/nginx/nginx.conf``:
-
-.. code-block:: nginx
-
-   events {
-       worker_connections 1024;
-   }
-
-   http {
-       server {
-           listen       127.0.0.1:8080;
-           server_name  default_server;
-           location / {
-               try_files 'foo bar' baz;
-           }
-       }
-   }
-
-The prettified JSON output would look like this:
-
-.. code-block:: js
-
-   {
-     "status": "ok",
-     "errors": [],
-     "config": [
-       {
-         "file": "/etc/nginx/nginx.conf",
-         "status": "ok",
-         "errors": [],
-         "parsed": [
-           {
-             "directive": "events",
-             "line": 1,
-             "args": [],
-             "block": [
-               {
-                 "directive": "worker_connections",
-                 "line": 2,
-                 "args": ["1024"]
-               }
-             ]
-           },
-           {
-             "directive": "http",
-             "line": 5,
-             "args": [],
-             "block": [
-               {
-                 "directive": "server",
-                 "line": 6,
-                 "args": [],
-                 "block": [
-                   {
-                     "directive": "listen",
-                     "line": 7,
-                     "args": ["127.0.0.1:8080"]
-                   },
-                   {
-                     "directive": "server_name",
-                     "line": 8,
-                     "args": ["default_server"]
-                   },
-                   {
-                     "directive": "location",
-                     "line": 9,
-                     "args": ["/"],
-                     "block": [
-                       {
-                         "directive": "try_files",
-                         "line": 10,
-                         "args": ["foo bar", "baz"]
-                       }
-                     ]
-                   }
-                 ]
-               }
-             ]
-           }
-         ]
-       }
-     ]
-   }
-
 Schema
 ~~~~~~
+
 **Response Object**
 
 .. code-block:: js
@@ -192,8 +114,10 @@ Schema
 
     {
         "directive": String, // the name of the directive
-        "line": Integer,     // line number the directive started on
-        "args": Array        // Array of String arguments
+        "line": Number,      // integer line number the directive started on
+        "args": Array,       // Array of String arguments
+        "includes": Array,   // Array of integers (included iff this is an include directive)
+        "block": Array       // Array of Directive Objects (included iff this is a block)
     }
 
 .. note::
@@ -202,18 +126,309 @@ Schema
 
    If this is a block directive, a ``"block"`` value will be used that holds an Array of more Directive Objects that define the block context.
 
+**Error Object**
+
+.. code-block:: js
+
+    {
+        "file": String,     // the full path of the config file
+        "line": Number,     // integer line number the directive that caused the error
+        "error": String,    // the error message
+        "callback": Object  // only included iff an "onerror" function was passed to parse()
+    }
+
+.. note::
+
+   If the ``--tb-onerror`` flag was used by crossplane parse, ``"callback"`` will contain a string that represents the traceback that the error caused.
+
+Example
+~~~~~~~
+
+The main NGINX config file is at ``/etc/nginx/nginx.conf``:
+
+.. code-block:: nginx
+
+   events {
+       worker_connections 1024;
+   }
+
+   http {
+       include conf.d/*.conf;
+   }
+
+And this config file is at ``/etc/nginx/conf.d/servers.conf``:
+
+.. code-block:: nginx
+
+   server {
+       listen 8080;
+       location / {
+           try_files 'foo bar' baz;
+       }
+   }
+
+   server {
+       listen 8081;
+       location / {
+           return 200 'success!';
+       }
+   }
+
+So then if you run this::
+
+   crossplane parse --indent=4 /etc/nginx/nginx.conf
+
+The prettified JSON output would look like this:
+
+.. code-block:: js
+
+   {
+       "status": "ok",
+       "errors": [],
+       "config": [
+           {
+               "file": "/etc/nginx/nginx.conf",
+               "status": "ok",
+               "errors": [],
+               "parsed": [
+                   {
+                       "directive": "events",
+                       "line": 1,
+                       "args": [],
+                       "block": [
+                           {
+                               "directive": "worker_connections",
+                               "line": 2,
+                               "args": [
+                                   "1024"
+                               ]
+                           }
+                       ]
+                   },
+                   {
+                       "directive": "http",
+                       "line": 5,
+                       "args": [],
+                       "block": [
+                           {
+                               "directive": "include",
+                               "line": 6,
+                               "args": [
+                                   "conf.d/*.conf"
+                               ],
+                               "includes": [
+                                   1
+                               ]
+                           }
+                       ]
+                   }
+               ]
+           },
+           {
+               "file": "/etc/nginx/conf.d/servers.conf",
+               "status": "ok",
+               "errors": [],
+               "parsed": [
+                   {
+                       "directive": "server",
+                       "line": 1,
+                       "args": [],
+                       "block": [
+                           {
+                               "directive": "listen",
+                               "line": 2,
+                               "args": [
+                                   "8080"
+                               ]
+                           },
+                           {
+                               "directive": "location",
+                               "line": 3,
+                               "args": [
+                                   "/"
+                               ],
+                               "block": [
+                                   {
+                                       "directive": "try_files",
+                                       "line": 4,
+                                       "args": [
+                                           "foo bar",
+                                           "baz"
+                                       ]
+                                   }
+                               ]
+                           }
+                       ]
+                   },
+                   {
+                       "directive": "server",
+                       "line": 8,
+                       "args": [],
+                       "block": [
+                           {
+                               "directive": "listen",
+                               "line": 9,
+                               "args": [
+                                   "8081"
+                               ]
+                           },
+                           {
+                               "directive": "location",
+                               "line": 10,
+                               "args": [
+                                   "/"
+                               ],
+                               "block": [
+                                   {
+                                       "directive": "return",
+                                       "line": 11,
+                                       "args": [
+                                           "200",
+                                           "success!"
+                                       ]
+                                   }
+                               ]
+                           }
+                       ]
+                   }
+               ]
+           }
+       ]
+   }
+
+crossplane parse (advanced)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This tool uses two flags that can change how ``crossplane`` handles errors.
+
+The first, ``--no-catch``, can be used if you'd prefer that crossplane quit parsing after the first error it finds.
+
+The second, ``--tb-onerror``, will add a ``"callback"`` key to all error objects in the JSON output, each containing
+a string representation of the traceback that would have been raised by the parser if the exception had not been caught.
+This can be useful for logging purposes.
 
 crossplane lex
 --------------
-*Documentation in progress.*
+
+This command takes an NGINX config file, splits it into tokens by removing whitespace and comments, and dumps the list of tokens as a JSON array.
+
+.. code-block::
+
+   usage: crossplane lex [-h] [-o OUT] [-i NUM] [-n] filename
+
+   lexes tokens from an nginx config file
+
+   positional arguments:
+     filename              the nginx config file
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     -o OUT, --out OUT     write output to a file
+     -i NUM, --indent NUM  number of spaces to indent output
+     -n, --line-numbers    include line numbers in json payload
+
+Example
+~~~~~~~
+
+Passing in this NGINX config file at ``/etc/nginx/nginx.conf``:
+
+.. code-block:: nginx
+
+   events {
+       worker_connections 1024;
+   }
+
+   http {
+       include conf.d/*.conf;
+   }
+
+By running::
+
+   crossplane lex /etc/nginx/nginx.conf
+
+Will result in this JSON output:
+
+.. code-block:: js
+
+   ["events","{","worker_connections","1024",";","}","http","{","include","conf.d/*.conf",";","}"]
+
+However, if you decide to use the ``--line-numbers`` flag, your output will look like:
+
+.. code-block::
+
+   [["events",1],["{",1],["worker_connections",2],["1024",2],[";",2],["}",3],["http",5],["{",5],["include",6],["conf.d/*.conf",6],[";",6],["}",7]]
 
 crossplane format
 -----------------
-*Documentation in progress.*
+
+This is a quick and dirty tool that uses `crossplane parse`_ internally to format an NGINX config file.
+Currently it removes all blank lines and comments, but this may get improved more in the future if there's
+demand for it. As of now, it serves the purpose of demonstrating what you can do with ``crossplane``'s parsing abilities.
+
+.. code-block::
+
+   usage: crossplane format [-h] [-o OUT] [-i NUM | -t] filename
+
+   formats an nginx config file
+
+   positional arguments:
+     filename              the nginx config file
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     -o OUT, --out OUT     write output to a file
+     -i NUM, --indent NUM  number of spaces to indent output
+     -t, --tabs            indent with tabs instead of spaces
 
 crossplane minify
 -----------------
-*Documentation in progress.*
+
+This is a simple and fun little tool that uses `crossplane lex`_ internally to remove as much whitespace from
+an NGINX config file as possible without affecting what it does. It can't imagine it will have much of a use to
+most people, but it demonstrates the kinds of things you can do with ``crossplane``'s lexing abilities.
+
+.. code-block::
+
+   usage: crossplane minify [-h] [-o OUT] filename
+
+   removes all whitespace from an nginx config
+
+   positional arguments:
+     filename           the nginx config file
+
+   optional arguments:
+     -h, --help         show this help message and exit
+     -o OUT, --out OUT  write output to a file
+
+
+Python Module
+=============
+
+In addition to the command line tool, you can import ``crossplane`` as a python module.
+There are two basic functions that the module will provide you: ``parse`` and ``lex``.
+
+crossplane.parse()
+------------------
+
+.. code-block:: python
+
+   import crossplane
+   crossplane.parse('/etc/nginx/nginx.conf')
+
+This will return the same payload as described in the `crossplane parse`_ section, except it will be
+Python dicts and not one giant JSON string.
+
+crossplane.lex()
+----------------
+
+.. code-block:: python
+
+   import crossplane
+   crossplane.lex('/etc/nginx/nginx.conf')
+
+``crossplane.lex`` generates 2-tuples. Inserting these pairs into a list will result in a long list similar
+to what you can see in the `crossplane lex`_ section when the ``--line-numbers`` flag is used, except it
+will obviously be a Python list of tuples and not one giant JSON string.
 
 
 Contributing
@@ -329,5 +544,4 @@ To run a subset of tests::
 To run all the test environments in *parallel* (you need to ``pip install detox``)::
 
     detox
-
 
