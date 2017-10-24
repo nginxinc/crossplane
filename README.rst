@@ -28,15 +28,9 @@ Reliable and fast NGINX configuration file parser.
 Install
 =======
 
-Eventually this will be uploaded to PyPI so you will be able to install by running::
+You can install both the `Command Line Tool`_ and `Python Module`_ via::
 
    pip install crossplane
-
-HOWEVER, since this is currently a private repo, you will have to clone it and install it manually with::
-
-   git clone git@github.com:nginxinc/crossplane.git
-   cd crossplane
-   pip install -e .  # `sudo -H pip install -e .` if you need permission
 
 
 Command Line Tool
