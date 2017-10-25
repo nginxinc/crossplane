@@ -9,6 +9,8 @@ help:
 	@echo "  test      to run tests with every python interpreter available."
 
 clean:
+	@rm -fr 'dist/'
+	@rm -fr 'build/'
 	@find . -path '*/.*' -prune -o -name '__pycache__' -exec rm -fr {} +
 	@find . -path '*/.*' -prune -o -name '*.egg-info' -exec rm -fr {} +
 	@find . -path '*/.*' -prune -o -name '*.py[co]' -exec rm -fr {} +
