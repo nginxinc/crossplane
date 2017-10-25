@@ -76,6 +76,12 @@ def test_includes_regular():
                                 'line': 4,
                                 'args': ['foo.conf'],
                                 'includes': [2]
+                            },
+                            {
+                                'directive': 'include',
+                                'line': 5,
+                                'args': ['bar.conf'],
+                                'includes': []
                             }
                         ]
                     }
