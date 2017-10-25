@@ -118,10 +118,10 @@ def parse(filename, onerror=None, catch_errors=True):
                         open(str(pattern)).close()
                         fnames = [pattern]
                     except Exception as e:
+                        fnames = []
                         e.lineno = stmt['line']
                         if catch_errors:
                             _handle_error(parsing, e)
-                            continue
                         else:
                             raise e
 
