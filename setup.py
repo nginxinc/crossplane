@@ -2,20 +2,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-# Note: To use the 'upload' functionality of this file, you must:
-#   $ pip install twine
-
+import io
 import os
+import shutil
 import sys
 
-from shutil import rmtree
-from codecs import open
-from setuptools import find_packages, setup, Command
+from setuptools import setup, Command
 
-here = os.path.abspath(os.path.dirname(__file__))
-path = os.path.join(here, 'README.rst')
-with open(path, encoding='utf-8') as f:
-    readme = '\n' + f.read()
+from crossplane import (
+    __title__, __summary__, __url__, __version__, __author__, __email__,
+    __package__, __license__
+)
+
+
+def get_readme():
+    here = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(here, 'README.rst')
+    with io.open(path, encoding='utf-8') as f:
+        return '\n' + f.read()
 
 
 class UploadCommand(Command):
@@ -38,29 +42,29 @@ class UploadCommand(Command):
     def run(self):
         try:
             self.status('Removing previous builds…')
-            rmtree(os.path.join(here, 'dist'))
+            shutil.rmtree(os.path.join(here, 'dist'))
         except OSError:
             pass
 
         self.status('Building Source and Wheel (universal) distribution…')
         os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
 
-        self.status('Uploading the package to PyPi via Twine…')
+        self.status('Uploading the package to PyPI via Twine…')
         os.system('twine upload dist/*')
 
         sys.exit()
 
 
 setup(
-    name='crossplane',
-    version='0.1.0',
-    description='Reliable and fast NGINX configuration file parser.',
-    long_description=readme,
-    author='Arie van Luttikhuizen',
-    author_email='aluttik@gmail.com',
-    url='https://github.com/nginxinc/crossplane',
-    packages=find_packages(exclude=['tests']),
-    license='Apache 2.0',
+    name=__title__,
+    version=__version__,
+    description=__summary__,
+    long_description=get_readme(),
+    author=__author__,
+    author_email=__email__,
+    url=__url__,
+    packages=[__package__],
+    license=__license__,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
@@ -83,7 +87,5 @@ setup(
             'crossplane = crossplane.__main__:main'
         ],
     },
-    cmdclass={
-        'upload': UploadCommand  # setup.py publish support
-    }
+    cmdclass={'upload': UploadCommand}
 )
