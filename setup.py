@@ -14,9 +14,10 @@ from crossplane import (
     __package__, __license__
 )
 
+here = os.path.abspath(os.path.dirname(__file__))
+
 
 def get_readme():
-    here = os.path.abspath(os.path.dirname(__file__))
     path = os.path.join(here, 'README.rst')
     with io.open(path, encoding='utf-8') as f:
         return '\n' + f.read()
