@@ -13,5 +13,5 @@ __version__ = '0.1.1'
 __author__ = 'Arie van Luttikhuizen'
 __email__ = 'aluttik@gmail.com'
 
-__license__ = 'Apache License, Version 2.0'
+__license__ = 'Apache 2.0'
 __copyright__ = 'Copyright 2017 NGINX, Inc.'

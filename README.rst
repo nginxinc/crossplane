@@ -2,7 +2,7 @@
 crossplane
 ==========
 
-|Release| |License| |Versions|
+|Build| |Release| |License| |Versions|
 
 Reliable and fast NGINX configuration file parser.
 
@@ -541,6 +541,8 @@ To run all the test environments in *parallel* (you need to ``pip install detox`
 
     detox
 
+.. |Build| image:: https://img.shields.io/travis/nginxinc/crossplane.svg
+   :target: https://travis-ci.org/nginxinc/crossplane
 
 .. |Release| image:: https://img.shields.io/github/release/nginxinc/crossplane.svg
    :target: https://github.com/nginxinc/crossplane/releases
@@ -550,3 +552,4 @@ To run all the test environments in *parallel* (you need to ``pip install detox`
 
 .. |Versions| image:: https://img.shields.io/pypi/pyversions/crossplane.svg
    :target: https://pypi.python.org/pypi/crossplane
+
