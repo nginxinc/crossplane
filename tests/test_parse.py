@@ -247,3 +247,123 @@ def test_includes_globbed():
             }
         ]
     }
+
+
+def test_includes_single():
+    dirname = os.path.join(here, 'configs', 'includes-regular')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(config, single=True)
+    assert payload == {
+        'status': 'ok',
+        'errors': [],
+        'config': [
+            {
+                'file': os.path.join(dirname, 'nginx.conf'),
+                'status': 'ok',
+                'errors': [],
+                'parsed': [
+                    {
+                        'directive': 'events',
+                        'line': 1,
+                        'args': [],
+                        'block': []
+                    },
+                    {
+                        'directive': 'http',
+                        'line': 2,
+                        'args': [],
+                        'block': [
+                            {
+                                'directive': 'include',
+                                'line': 3,
+                                'args': ['conf.d/server.conf']
+                                # no 'includes' key
+                            }
+                        ]
+                    }
+                ]
+            }
+            # single config parsed
+        ]
+    }
+
+
+def test_ignore_directives():
+    dirname = os.path.join(here, 'configs', 'simple')
+    config = os.path.join(dirname, 'nginx.conf')
+
+    # check that you can ignore multiple directives
+    payload = crossplane.parse(config, ignore=['listen', 'server_name'])
+    assert payload == {
+        "status": "ok",
+        "errors": [],
+        "config": [
+            {
+                "file": os.path.join(dirname, 'nginx.conf'),
+                "status": "ok",
+                "errors": [],
+                "parsed": [
+                    {
+                        "directive": "events",
+                        "line": 1,
+                        "args": [],
+                        "block": [
+                            {
+                                "directive": "worker_connections",
+                                "line": 2,
+                                "args": ["1024"]
+                            }
+                        ]
+                    },
+                    {
+                        "directive": "http",
+                        "line": 5,
+                        "args": [],
+                        "block": [
+                            {
+                                "directive": "server",
+                                "line": 6,
+                                "args": [],
+                                "block": [
+                                    {
+                                        "directive": "location",
+                                        "line": 9,
+                                        "args": ["/"],
+                                        "block": [
+                                            {
+                                                "directive": "return",
+                                                "line": 10,
+                                                "args": ["200", "foo bar baz"]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+
+    # check that you can also ignore block directives
+    payload = crossplane.parse(config, ignore=['events', 'server'])
+    assert payload == {
+        "status": "ok",
+        "errors": [],
+        "config": [
+            {
+                "file": os.path.join(dirname, 'nginx.conf'),
+                "status": "ok",
+                "errors": [],
+                "parsed": [
+                    {
+                        "directive": "http",
+                        "line": 5,
+                        "args": [],
+                        "block": []
+                    }
+                ]
+            }
+        ]
+    }

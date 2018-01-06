@@ -19,8 +19,17 @@ def _prepare_if_args(stmt):
         args[:] = args[start:end]
 
 
-def parse(filename, onerror=None, catch_errors=True):
-    """Parses an nginx config file and returns a nested dict payload"""
+def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False):
+    """
+    Parses an nginx config file and returns a nested dict payload
+    
+    :param filename: string contianing the name of the config file to parse
+    :param onerror: function that determines what's saved in "callback"
+    :param catch_errors: bool; if False, parse stops after first error
+    :param ignore: list or tuple of directives to exclude from the payload
+    :param single: bool; if True, including from other files doesn't happen
+    :returns: a payload that describes the parsed nginx config
+    """
     config_dir = os.path.dirname(filename)
 
     payload = {
@@ -82,6 +91,13 @@ def parse(filename, onerror=None, catch_errors=True):
                 stmt['args'].append(token)
                 token, __ = next(tokens)
 
+            # consume the directive if it is ignored and move on
+            if stmt['directive'] in ignore:
+                # if this directive was a block consume it too
+                if token == '{':
+                    _parse(parsing, tokens, consume=True)
+                continue
+
             # prepare arguments
             if stmt['directive'] == 'if':
                 _prepare_if_args(stmt)
@@ -103,7 +119,7 @@ def parse(filename, onerror=None, catch_errors=True):
                     raise e
 
             # add "includes" to the payload if this is an include statement
-            if stmt['directive'] == 'include':
+            if not single and stmt['directive'] == 'include':
                 pattern = args[0]
                 if not os.path.isabs(args[0]):
                     pattern = os.path.join(config_dir, args[0])
