@@ -5,6 +5,7 @@ import sys
 from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
 from traceback import format_exception
 
+from . import __version__
 from .lexer import lex as lex_file
 from .parser import parse as parse_file
 from .errors import NgxParserBaseException
@@ -70,12 +71,14 @@ def _dump_payload(obj, fp, indent):
     fp.write(json.dumps(obj, **kwargs) + '\n')
 
 
-def parse(filename, out, indent=None, catch=None, tb_onerror=None):
+def parse(filename, out, indent=None, catch=None, tb_onerror=None, ignore='', single=False):
+    ignore = ignore.split(',') if ignore else []
+
     def callback(e):
         exc = sys.exc_info() + (10,)
         return ''.join(format_exception(*exc)).rstrip()
 
-    kwargs = {'catch_errors': catch}
+    kwargs = {'catch_errors': catch, 'ignore': ignore, 'single': single}
     if tb_onerror:
         kwargs['onerror'] = callback
 
@@ -157,6 +160,7 @@ def parse_args(args=None):
         description='various operations for nginx config files',
         usage='%(prog)s <command> [options]'
     )
+    parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + __version__)
     subparsers = parser.add_subparsers(title='commands')
 
     def create_subparser(function, help):
@@ -170,8 +174,10 @@ def parse_args(args=None):
     p.add_argument('filename', help='the nginx config file')
     p.add_argument('-o', '--out', type=FileType('w'), default='-', help='write output to a file')
     p.add_argument('-i', '--indent', type=int, metavar='NUM', help='number of spaces to indent output')
+    p.add_argument('--ignore', metavar='DIRECTIVES', default='', help='ignore directives (comma-separated)')
     p.add_argument('--no-catch', action='store_false', dest='catch', help='only collect first error in file')
     p.add_argument('--tb-onerror', action='store_true', help='include tracebacks in config errors')
+    p.add_argument('--single-file', action='store_true', dest='single', help='do not include other config files')
 
     p = create_subparser(lex, 'lexes tokens from an nginx config file')
     p.add_argument('filename', help='the nginx config file')
@@ -201,7 +207,7 @@ def parse_args(args=None):
 
     parsed = parser.parse_args(args=args)
 
-    # this addresses a bug  that was added to argparse in Python 3.3
+    # this addresses a bug that was added to argparse in Python 3.3
     if not parsed.__dict__:
         parser.error('too few arguments')
 
