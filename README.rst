@@ -77,8 +77,18 @@ the schema defined below, and dumps the entire thing as a JSON payload.
      -h, --help            show this help message and exit
      -o OUT, --out OUT     write output to a file
      -i NUM, --indent NUM  number of spaces to indent output
+     --ignore DIRECTIVES   ignore directives (comma-separated)
      --no-catch            only collect first error in file
      --tb-onerror          include tracebacks in config errors
+     --single-file         do not include other config files
+
+**Privacy and Security**
+
+Since ``crossplane`` is usually used to create payloads that are sent to different servers, it's important to keep security in mind. For that reason, the ``--ignore`` option was added. It can be used to keep certain sensitive directives out of the payload output entirely.
+
+For example, we always the equivalent of this flag in the `NGINX Amplify Agent <https://github.com/nginxinc/nginx-amplify-agent/>`_ out of respect for our users' privacy::
+
+   --ignore=auth_basic_user_file,secure_link_secret,ssl_certificate_key,ssl_client_certificate,ssl_password_file,ssl_stapling_file,ssl_trusted_certificate
 
 Schema
 ~~~~~~
@@ -118,7 +128,7 @@ Schema
 
 .. note::
 
-   If this is an ``include`` directive, an ``"includes"`` value will be used that holds an Array of indices of the configs that are included by this directive.
+   If this is an ``include`` directive and the ``--single-file`` flag was not used, an ``"includes"`` value will be used that holds an Array of indices of the configs that are included by this directive.
 
    If this is a block directive, a ``"block"`` value will be used that holds an Array of more Directive Objects that define the block context.
 
