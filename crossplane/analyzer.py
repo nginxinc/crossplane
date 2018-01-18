@@ -1920,7 +1920,7 @@ def analyze(fname, stmt, term, ctx=()):
         reason = '"%s" directive is not allowed here' % directive
         raise NgxParserDirectiveContextError(reason, fname, line)
 
-    valid_flag = lambda x: x in ('on', 'off')
+    valid_flag = lambda x: x.lower() in ('on', 'off')
 
     # do this in reverse because we only throw errors at the end if no masks
     # are valid, and typically the first bit mask is what the parser expects
@@ -1942,6 +1942,8 @@ def analyze(fname, stmt, term, ctx=()):
             (mask & NGX_CONF_1MORE and n_args >= 1) or
             (mask & NGX_CONF_2MORE and n_args >= 2)):
             return
+        elif mask & NGX_CONF_FLAG and n_args == 1 and not valid_flag(args[0]):
+            reason = 'invalid value "%s" in "%%s" directive, it must be "on" or "off"' % args[0]
         else:
             reason = 'invalid number of arguments in "%s" directive'
 
