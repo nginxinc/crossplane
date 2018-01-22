@@ -10,6 +10,7 @@ Reliable and fast NGINX configuration file parser.
 - `Command Line Tool`_
 
   - `crossplane parse`_
+  - `crossplane build`_
   - `crossplane lex`_
   - `crossplane format`_
   - `crossplane minify`_
@@ -17,6 +18,7 @@ Reliable and fast NGINX configuration file parser.
 - `Python Module`_
 
   - `crossplane.parse()`_
+  - `crossplane.build()`_
   - `crossplane.lex()`_
 
 - `Contributing`_
@@ -313,6 +315,31 @@ The second, ``--tb-onerror``, will add a ``"callback"`` key to all error objects
 a string representation of the traceback that would have been raised by the parser if the exception had not been caught.
 This can be useful for logging purposes.
 
+crossplane build
+----------------
+
+.. code-block::
+
+   usage: crossplane build [-h] [-d PATH] [-f] [-i NUM | -t] [--no-headers]
+                           [--stdout] [-v]
+                           filename
+
+   builds an nginx config from a json payload
+
+   positional arguments:
+     filename              the file with the config payload
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     -v, --verbose         verbose output
+     -d PATH, --dir PATH   the base directory to build in
+     -f, --force           overwrite existing files
+     -i NUM, --indent NUM  number of spaces to indent output
+     -t, --tabs            indent with tabs instead of spaces
+     --no-headers          do not write header to configs
+     --stdout              write configs to stdout instead
+
+
 crossplane lex
 --------------
 
@@ -419,10 +446,27 @@ crossplane.parse()
 .. code-block:: python
 
    import crossplane
-   crossplane.parse('/etc/nginx/nginx.conf')
+   payload = crossplane.parse('/etc/nginx/nginx.conf')
 
 This will return the same payload as described in the `crossplane parse`_ section, except it will be
 Python dicts and not one giant JSON string.
+
+crossplane.build()
+------------------
+
+.. code-block:: python
+
+   import crossplane
+   config = crossplane.build(
+       [{
+           "directive": "events",
+           "args": [],
+           "block": [{
+               "directive": "worker_connections",
+               "args": ["1024"]
+           }]
+       }]
+   )
 
 crossplane.lex()
 ----------------
@@ -430,7 +474,7 @@ crossplane.lex()
 .. code-block:: python
 
    import crossplane
-   crossplane.lex('/etc/nginx/nginx.conf')
+   tokens = crossplane.lex('/etc/nginx/nginx.conf')
 
 ``crossplane.lex`` generates 2-tuples. Inserting these pairs into a list will result in a long list similar
 to what you can see in the `crossplane lex`_ section when the ``--line-numbers`` flag is used, except it

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
 import sys
 
 from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
@@ -8,60 +9,16 @@ from traceback import format_exception
 from . import __version__
 from .lexer import lex as lex_file
 from .parser import parse as parse_file
+from .builder import build as build_file, _enquote, DELIMITERS
 from .errors import NgxParserBaseException
-from .compat import PY2, json
-
-DELIMITERS = ('{', '}', ';')
+from .compat import PY2, json, input
 
 
-def _escape(string):
-    prev, char = '', ''
-    for char in string:
-        if prev == '\\' or prev + char == '${':
-            prev += char
-            yield prev
-            continue
-        if prev == '$':
-            yield prev
-        if char not in ('\\', '$'):
-            yield char
-        prev = char
-    if char in ('\\', '$'):
-        yield char
-
-
-def _needs_quotes(string):
-    if string == '':
-        return True
-    elif string in DELIMITERS:
-        return False
-
-    # lexer should throw an error when variable expansion syntax
-    # is messed up, but just wrap it in quotes for now I guess
-    chars = _escape(string)
-
-    # arguments can't start with variable expansion syntax
-    char = next(chars)
-    if char.isspace() or char in ('{', ';', '"', "'", '${'):
-        return True
-
-    expanding = False
-    for char in chars:
-        if char.isspace() or char in ('{', ';', '"', "'"):
-            return True
-        elif char == ('${' if expanding else '}'):
-            return True
-        elif char == ('}' if expanding else '${'):
-            expanding = not expanding
-
-    return char in ('\\', '$') or expanding
-
-
-def _enquote(arg):
-    arg = str(arg.encode('utf-8') if PY2 else arg)
-    if _needs_quotes(arg):
-        arg = repr(arg.decode('string_escape') if PY2 else arg)
-    return arg
+def _prompt_yes():
+    try:
+        return input('overwrite? (y/n [n]) ').lower().startswith('y')
+    except (KeyboardInterrupt, EOFError):
+        sys.exit(1)
 
 
 def _dump_payload(obj, fp, indent):
@@ -86,6 +43,59 @@ def parse(filename, out, indent=None, catch=None, tb_onerror=None, ignore='', si
     _dump_payload(payload, out, indent=indent)
 
 
+def build(filename, dirname, force, indent, tabs, header, stdout, verbose):
+    with open(filename, 'r') as fp:
+        payload = json.load(fp)
+
+    if dirname is None:
+        dirname = os.getcwd()
+
+    existing = []
+    dirs_to_make = []
+
+    for config in payload['config']:
+        path = os.path.join(dirname, config['file'])
+        dirpath = os.path.dirname(path)
+        if os.path.exists(path):
+            existing.append(path)
+        elif not os.path.exists(dirpath) and dirpath not in dirs_to_make:
+            dirs_to_make.append(dirpath)
+
+    if existing and not force and not stdout:
+        print('building {} would overwrite these files:'.format(filename))
+        print('\n'.join(existing))
+        if not _prompt_yes():
+            print('not overwritten')
+            return
+
+    for dirpath in dirs_to_make:
+        os.makedirs(dirpath)
+
+    for config in payload['config']:
+        path = os.path.join(dirname, config['file'])
+
+        if header:
+            output = (
+                '# This config was built from JSON using crossplane.\n'
+                '# If you encounter any bugs please report them here:\n'
+                '# https://github.com/nginxinc/crossplane/issues\n'
+                '\n'
+            )
+        else:
+            output = ''
+
+        parsed = config['parsed']
+        output += build_file(parsed, indent, tabs) + '\n'
+
+        if stdout:
+            print('# ' + path + '\n' + output)
+        else:
+            with open(path, 'w') as fp:
+                fp.write(output)
+            if verbose:
+                print('wrote to ' + path)
+
+
 def lex(filename, out, indent=None, line_numbers=False):
     payload = list(lex_file(filename))
     if not line_numbers:
@@ -105,36 +115,11 @@ def minify(filename, out):
 
 
 def format(filename, out, indent=None, tabs=False):
-    padding = '\t' if tabs else ' ' * indent
-
-    def _format(objs, depth):
-        margin = padding * depth
-
-        for obj in objs:
-            directive = obj['directive']
-            args = [_enquote(arg) for arg in obj['args']]
-
-            if directive == 'if':
-                line = 'if (' + ' '.join(args) + ')'
-            elif args:
-                line = directive + ' ' + ' '.join(args)
-            else:
-                line = directive
-
-            if obj.get('block') is None:
-                yield margin + line + ';'
-            else:
-                yield margin + line + ' {'
-                for line in _format(obj['block'], depth=depth+1):
-                    yield line
-                yield margin + '}'
-
     payload = parse_file(filename)
-
+    parsed = payload['config'][0]['parsed']
     if payload['status'] == 'ok':
-        config = payload['config'][0]['parsed']
-        lines = _format(config, depth=0)
-        out.write('\n'.join(lines) + '\n')
+        output = build_file(parsed, indent, tabs) + '\n'
+        out.write(output)
     else:
         e = payload['errors'][0]
         raise NgxParserBaseException(e['error'], e['file'], e['line'])
@@ -179,6 +164,17 @@ def parse_args(args=None):
     p.add_argument('--tb-onerror', action='store_true', help='include tracebacks in config errors')
     p.add_argument('--single-file', action='store_true', dest='single', help='do not include other config files')
 
+    p = create_subparser(build, 'builds an nginx config from a json payload')
+    p.add_argument('filename', help='the file with the config payload')
+    p.add_argument('-v', '--verbose', action='store_true', help='verbose output')
+    p.add_argument('-d', '--dir', metavar='PATH', default=None, dest='dirname', help='the base directory to build in')
+    p.add_argument('-f', '--force', action='store_true', help='overwrite existing files')
+    g = p.add_mutually_exclusive_group()
+    g.add_argument('-i', '--indent', type=int, metavar='NUM', help='number of spaces to indent output', default=4)
+    g.add_argument('-t', '--tabs', action='store_true', help='indent with tabs instead of spaces')
+    p.add_argument('--no-headers', action='store_false', dest='header', help='do not write header to configs')
+    p.add_argument('--stdout', action='store_true', help='write configs to stdout instead')
+
     p = create_subparser(lex, 'lexes tokens from an nginx config file')
     p.add_argument('filename', help='the nginx config file')
     p.add_argument('-o', '--out', type=FileType('w'), default='-', help='write output to a file')
@@ -197,10 +193,10 @@ def parse_args(args=None):
     g.add_argument('-t', '--tabs', action='store_true', help='indent with tabs instead of spaces')
 
     def help(command):
-        if command not in parser._actions[1].choices:
+        if command not in parser._actions[-1].choices:
             parser.error('unknown command %r' % command)
         else:
-            parser._actions[1].choices[command].print_help()
+            parser._actions[-1].choices[command].print_help()
 
     p = create_subparser(help, 'show help for commands')
     p.add_argument('command', help='command to show help for')
