@@ -4,10 +4,10 @@ crossplane
 
 |Build| |Release| |License| |Versions|
 
-Reliable and fast NGINX configuration file parser.
+Reliable and fast NGINX configuration file parser and builder.
 
 - `Install`_
-- `Command Line Tool`_
+- `Command Line Interface`_
 
   - `crossplane parse`_
   - `crossplane build`_
@@ -37,8 +37,8 @@ You can install both the `Command Line Tool`_ and `Python Module`_ via::
    pip install crossplane
 
 
-Command Line Tool
-=================
+Command Line Interface
+======================
 
 .. code-block::
 
@@ -56,8 +56,6 @@ Command Line Tool
      format                formats an nginx config file
      help                  show help for commands
 
-Currently, the only way to run this script is to clone this repository, but soon it will be
-automatically installed when installing the package via pip.
 
 crossplane parse
 ----------------
@@ -318,6 +316,10 @@ This can be useful for logging purposes.
 crossplane build
 ----------------
 
+This command will take a path to a file as input. The file should contain a JSON representation of an NGINX config that has
+the structure defined above. Saving and using the output from ``crossplane parse`` to rebuild your config files should not
+cause any differences in content except for the formatting.
+
 .. code-block::
 
    usage: crossplane build [-h] [-d PATH] [-f] [-i NUM | -t] [--no-headers]
@@ -467,6 +469,8 @@ crossplane.build()
            }]
        }]
    )
+
+This will return a single string that contains an entire NGINX config file.
 
 crossplane.lex()
 ----------------
