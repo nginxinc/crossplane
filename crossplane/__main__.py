@@ -53,14 +53,19 @@ def build(filename, dirname, force, indent, tabs, header, stdout, verbose):
     existing = []
     dirs_to_make = []
 
+    # find which files from the json payload will overwrite existing files and
+    # which directories need to be created in order for the config to be built
     for config in payload['config']:
-        path = os.path.join(dirname, config['file'])
+        path = config['file']
+        if not os.path.isabs(path):
+            path = os.path.join(dirname, path)
         dirpath = os.path.dirname(path)
         if os.path.exists(path):
             existing.append(path)
         elif not os.path.exists(dirpath) and dirpath not in dirs_to_make:
             dirs_to_make.append(dirpath)
 
+    # ask the user if it's okay to overwrite existing files
     if existing and not force and not stdout:
         print('building {} would overwrite these files:'.format(filename))
         print('\n'.join(existing))
@@ -68,15 +73,17 @@ def build(filename, dirname, force, indent, tabs, header, stdout, verbose):
             print('not overwritten')
             return
 
+    # make directories necessary for the config to be built
     for dirpath in dirs_to_make:
         os.makedirs(dirpath)
 
+    # build the nginx configuration file from the json payload
     for config in payload['config']:
         path = os.path.join(dirname, config['file'])
 
         if header:
             output = (
-                '# This config was built from JSON using crossplane.\n'
+                '# This config was built from JSON using NGINX crossplane.\n'
                 '# If you encounter any bugs please report them here:\n'
                 '# https://github.com/nginxinc/crossplane/issues\n'
                 '\n'
