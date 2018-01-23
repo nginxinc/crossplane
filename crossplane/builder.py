@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import codecs
 import os
 
 from .lexer import lex
@@ -53,9 +54,9 @@ def _needs_quotes(string):
 
 
 def _enquote(arg):
-    arg = str(arg.encode('utf-8') if PY2 else arg)
     if _needs_quotes(arg):
-        arg = repr(arg.decode('string_escape') if PY2 else arg)
+        arg = repr(codecs.decode(arg, 'raw_unicode_escape'))
+        arg = arg.replace('\\\\', '\\').lstrip('u')
     return arg
 
 

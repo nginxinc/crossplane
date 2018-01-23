@@ -11,5 +11,7 @@ PY3 = (sys.version_info[0] == 3)
 
 if PY2:
     input = raw_input
+    basestring = basestring
 else:
     input = input
+    basestring = str
