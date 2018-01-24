@@ -32,7 +32,7 @@ Reliable and fast NGINX configuration file parser and builder.
 Install
 =======
 
-You can install both the `Command Line Tool`_ and `Python Module`_ via::
+You can install both the `Command Line Interface`_ and `Python Module`_ via::
 
    pip install crossplane
 
