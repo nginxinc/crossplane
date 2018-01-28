@@ -593,7 +593,7 @@ Tips
 
 To run a subset of tests::
 
-    tox -e <env> -- py.test <test>
+    tox -e <env> -- <path/to/test::test_name>
 
 To run all the test environments in *parallel* (you need to ``pip install detox``)::
 
