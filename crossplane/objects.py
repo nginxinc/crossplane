@@ -12,10 +12,8 @@ def _init_directive(parent, directive_json):
 class NginxDirective(object):
     __slots__ = ('parent', 'directive', 'line', 'args', 'includes')
 
-    def __init__(self, directive='', line=0, args=[], includes=[], parent=None,
-                 **kwargs):
+    def __init__(self, directive, args, line, includes=[], parent=None):
         self.parent = parent
-
         self.directive = directive
         self.line = line
         self.args = args
@@ -35,7 +33,7 @@ class NginxDirective(object):
         """
         return []
 
-    def dict(self):
+    def to_dict(self):
         result = {}
 
         for slot in self.__slots__:
@@ -50,13 +48,6 @@ class NginxDirective(object):
         Recursively walk the tree to find the containing file.
         """
         return self.parent.file
-
-    @property
-    def location(self):
-        """
-        Return filename, line number of current directive.
-        """
-        return self.file, self.line
 
     def context(self, *args):
         """
@@ -123,16 +114,14 @@ class NginxBlockDirective(NginxDirective):
     def get(self, directive):
         return self.index[directive] if directive in self.index else []
 
-    def dict(self):
+    def to_dict(self):
         result = {}
 
         for slot in self.__slots__:
             if slot not in ('parent', 'index', 'block'):
                 result[slot] = getattr(self, slot)
 
-        result['block'] = [
-            directive.dict() for directive in self.block
-        ]
+        result['block'] = [directive.to_dict() for directive in self.block]
 
         return result
 
@@ -168,16 +157,14 @@ class NginxConfigFile(object):
     def get(self, directive):
         return self.index[directive] if directive in self.index else []
 
-    def dict(self):
+    def to_dict(self):
         result = {}
 
         for slot in self.__slots__:
             if slot not in ('parent', 'index', 'parsed'):
                 result[slot] = getattr(self, slot)
 
-        result['parsed'] = [
-            directive.dict() for directive in self.parsed
-        ]
+        result['parsed'] = [directive.to_dict() for directive in self.parsed]
 
         return result
 
@@ -213,12 +200,10 @@ class CrossplaneConfig(object):
     def get_include(self, idx):
         return self.index[self.files[idx]]
 
-    def dict(self):
+    def to_dict(self):
         result = {}
 
-        result['config'] = [
-            config.dict() for config in self.configs
-        ]
+        result['config'] = [config.to_dict() for config in self.configs]
 
         return result
 

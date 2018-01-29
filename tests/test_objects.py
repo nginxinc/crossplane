@@ -39,7 +39,6 @@ def test_load_simple():
 
     # some higher level primitives
     assert location.file == config
-    assert location.location == (config, 9)
 
     location_ctx, ctx_parent = location.context('server_name', 'listen')
     assert location_ctx is not None
@@ -58,7 +57,7 @@ def test_load_build_cycle_simple(tmpdir):
 
     xconfig = crossplane.load(config)
 
-    build_config = crossplane.build(xconfig.dict()['config'][0]['parsed'])
+    build_config = crossplane.build(xconfig.to_dict()['config'][0]['parsed'])
     build_file = tmpdir.join('build1.conf')
     build_file.write(build_config)
     build_xconfig = crossplane.load(build_file.strpath)
@@ -100,7 +99,7 @@ def test_load_build_cycle_with_changes_simple(tmpdir):
     # change events worker_connections
     xconfigfile.get('events')[0].get('worker_connections')[0].args = ['2048']
 
-    build_config = crossplane.build(xconfig.dict()['config'][0]['parsed'])
+    build_config = crossplane.build(xconfig.to_dict()['config'][0]['parsed'])
     build_file = tmpdir.join('build1.conf')
     build_file.write(build_config)
     build_xconfig = crossplane.load(build_file.strpath)
