@@ -10,4 +10,4 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Grant Hulegaard <loki.labrys@gmail.com> `@gshulegaard <https://github.com/gshulegaard> <https://gitlab.com/gshulegaard>`_
