@@ -6,11 +6,11 @@ import crossplane
 here = os.path.dirname(__file__)
 
 
-def test_ximport_simple():
+def test_load_simple():
     dirname = os.path.join(here, 'configs', 'simple')
     config = os.path.join(dirname, 'nginx.conf')
 
-    xconfig = crossplane.ximport(config)
+    xconfig = crossplane.load(config)
     assert xconfig is not None
     assert isinstance(xconfig, crossplane.objects.CrossplaneConfig)
     assert len(xconfig.configs) == 1
@@ -24,30 +24,44 @@ def test_ximport_simple():
 
     events = xconfigfile.get('events')[0]
     assert isinstance(events, crossplane.objects.NGXBlockDirective)
-    assert events.worker_connections is not None
-    assert events.worker_connections[0].args == ['1024']
+    assert len(events.get('worker_connections')) > 0
+    assert events.get('worker_connections')[0].args == ['1024']
 
-    server = xconfigfile.http[0].server[0]
+    server = xconfigfile.get('http')[0].get('server')[0]
     assert isinstance(server, crossplane.objects.NGXBlockDirective)
-    assert server.listen[0].args == ['127.0.0.1:8080']
-    assert server.server_name[0].args == ['default_server']
+    assert server.get('listen')[0].args == ['127.0.0.1:8080']
+    assert server.get('server_name')[0].args == ['default_server']
 
-    location = server.location[0]
+    location = server.get('location')[0]
     assert isinstance(location, crossplane.objects.NGXBlockDirective)
     assert location.args == ['/']
     assert location.get('return')[0].args == ['200', 'foo bar baz']
 
+    # some higher level primitives
+    assert location.file == config
+    assert location.location == (config, 9)
 
-def test_ximport_build_cycle_simple(tmpdir):
+    location_ctx, ctx_parent = location.context('server_name', 'listen')
+    assert location_ctx is not None
+    assert ctx_parent is not None
+    # found server_name and listen from nearest parent
+    assert 'default_server' in location_ctx['server_name']
+    assert '127.0.0.1:8080' in location_ctx['listen']
+    # ctx_parent is returned as the actual object containing the context
+    # (actual mapped object)
+    assert ctx_parent == server
+
+
+def test_load_build_cycle_simple(tmpdir):
     dirname = os.path.join(here, 'configs', 'simple')
     config = os.path.join(dirname, 'nginx.conf')
 
-    xconfig = crossplane.ximport(config)
+    xconfig = crossplane.load(config)
 
     build_config = crossplane.build(xconfig.dict()['config'][0]['parsed'])
     build_file = tmpdir.join('build1.conf')
     build_file.write(build_config)
-    build_xconfig = crossplane.ximport(build_file.strpath)
+    build_xconfig = crossplane.load(build_file.strpath)
 
     assert build_xconfig is not None
     assert isinstance(build_xconfig, crossplane.objects.CrossplaneConfig)
@@ -62,34 +76,34 @@ def test_ximport_build_cycle_simple(tmpdir):
 
     events = xconfigfile.get('events')[0]
     assert isinstance(events, crossplane.objects.NGXBlockDirective)
-    assert events.worker_connections is not None
-    assert events.worker_connections[0].args == ['1024']
+    assert len(events.get('worker_connections')) > 0
+    assert events.get('worker_connections')[0].args == ['1024']
 
-    server = xconfigfile.http[0].server[0]
+    server = xconfigfile.get('http')[0].get('server')[0]
     assert isinstance(server, crossplane.objects.NGXBlockDirective)
-    assert server.listen[0].args == ['127.0.0.1:8080']
-    assert server.server_name[0].args == ['default_server']
+    assert server.get('listen')[0].args == ['127.0.0.1:8080']
+    assert server.get('server_name')[0].args == ['default_server']
 
-    location = server.location[0]
+    location = server.get('location')[0]
     assert isinstance(location, crossplane.objects.NGXBlockDirective)
     assert location.args == ['/']
     assert location.get('return')[0].args == ['200', 'foo bar baz']
 
 
-def test_ximport_build_cycle_with_changes_simple(tmpdir):
+def test_load_build_cycle_with_changes_simple(tmpdir):
     dirname = os.path.join(here, 'configs', 'simple')
     config = os.path.join(dirname, 'nginx.conf')
 
-    xconfig = crossplane.ximport(config)
+    xconfig = crossplane.load(config)
     xconfigfile = xconfig.get(config)
 
     # change events worker_connections
-    xconfigfile.get('events')[0].worker_connections[0].args = ['2048']
+    xconfigfile.get('events')[0].get('worker_connections')[0].args = ['2048']
 
     build_config = crossplane.build(xconfig.dict()['config'][0]['parsed'])
     build_file = tmpdir.join('build1.conf')
     build_file.write(build_config)
-    build_xconfig = crossplane.ximport(build_file.strpath)
+    build_xconfig = crossplane.load(build_file.strpath)
 
     assert build_xconfig is not None
     assert isinstance(build_xconfig, crossplane.objects.CrossplaneConfig)
@@ -104,15 +118,15 @@ def test_ximport_build_cycle_with_changes_simple(tmpdir):
 
     events = xconfigfile.get('events')[0]
     assert isinstance(events, crossplane.objects.NGXBlockDirective)
-    assert events.worker_connections is not None
-    assert events.worker_connections[0].args == ['2048']  # changed!
+    assert len(events.get('worker_connections')) > 0
+    assert events.get('worker_connections')[0].args == ['2048']  # changed!
 
-    server = xconfigfile.http[0].server[0]
+    server = xconfigfile.get('http')[0].get('server')[0]
     assert isinstance(server, crossplane.objects.NGXBlockDirective)
-    assert server.listen[0].args == ['127.0.0.1:8080']
-    assert server.server_name[0].args == ['default_server']
+    assert server.get('listen')[0].args == ['127.0.0.1:8080']
+    assert server.get('server_name')[0].args == ['default_server']
 
-    location = server.location[0]
+    location = server.get('location')[0]
     assert isinstance(location, crossplane.objects.NGXBlockDirective)
     assert location.args == ['/']
     assert location.get('return')[0].args == ['200', 'foo bar baz']

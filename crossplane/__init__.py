@@ -2,9 +2,9 @@
 from .parser import parse
 from .lexer import lex
 from .builder import build
-from .objects import xmap, ximport
+from .objects import map, load
 
-__all__ = ['parse', 'lex', 'build', 'xmap', 'ximport']
+__all__ = ['parse', 'lex', 'build', 'map', 'load']
 
 __title__ = 'crossplane'
 __summary__ = 'Reliable and fast NGINX configuration file parser.'
