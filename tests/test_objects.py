@@ -17,23 +17,23 @@ def test_load_simple():
 
     # only one file
     xconfigfile = xconfig.get(config)
-    assert isinstance(xconfigfile, crossplane.objects.NGXConfigFile)
+    assert isinstance(xconfigfile, crossplane.objects.NginxConfigFile)
     for directive in ('events', 'http'):
         assert directive in xconfigfile
         assert len(xconfigfile.get(directive)) == 1
 
     events = xconfigfile.get('events')[0]
-    assert isinstance(events, crossplane.objects.NGXBlockDirective)
+    assert isinstance(events, crossplane.objects.NginxBlockDirective)
     assert len(events.get('worker_connections')) > 0
     assert events.get('worker_connections')[0].args == ['1024']
 
     server = xconfigfile.get('http')[0].get('server')[0]
-    assert isinstance(server, crossplane.objects.NGXBlockDirective)
+    assert isinstance(server, crossplane.objects.NginxBlockDirective)
     assert server.get('listen')[0].args == ['127.0.0.1:8080']
     assert server.get('server_name')[0].args == ['default_server']
 
     location = server.get('location')[0]
-    assert isinstance(location, crossplane.objects.NGXBlockDirective)
+    assert isinstance(location, crossplane.objects.NginxBlockDirective)
     assert location.args == ['/']
     assert location.get('return')[0].args == ['200', 'foo bar baz']
 
@@ -69,23 +69,23 @@ def test_load_build_cycle_simple(tmpdir):
 
     # only one file
     xconfigfile = build_xconfig.get(build_file)
-    assert isinstance(xconfigfile, crossplane.objects.NGXConfigFile)
+    assert isinstance(xconfigfile, crossplane.objects.NginxConfigFile)
     for directive in ('events', 'http'):
         assert directive in xconfigfile
         assert len(xconfigfile.get(directive)) == 1
 
     events = xconfigfile.get('events')[0]
-    assert isinstance(events, crossplane.objects.NGXBlockDirective)
+    assert isinstance(events, crossplane.objects.NginxBlockDirective)
     assert len(events.get('worker_connections')) > 0
     assert events.get('worker_connections')[0].args == ['1024']
 
     server = xconfigfile.get('http')[0].get('server')[0]
-    assert isinstance(server, crossplane.objects.NGXBlockDirective)
+    assert isinstance(server, crossplane.objects.NginxBlockDirective)
     assert server.get('listen')[0].args == ['127.0.0.1:8080']
     assert server.get('server_name')[0].args == ['default_server']
 
     location = server.get('location')[0]
-    assert isinstance(location, crossplane.objects.NGXBlockDirective)
+    assert isinstance(location, crossplane.objects.NginxBlockDirective)
     assert location.args == ['/']
     assert location.get('return')[0].args == ['200', 'foo bar baz']
 
@@ -111,22 +111,22 @@ def test_load_build_cycle_with_changes_simple(tmpdir):
 
     # only one file
     xconfigfile = build_xconfig.get(build_file)
-    assert isinstance(xconfigfile, crossplane.objects.NGXConfigFile)
+    assert isinstance(xconfigfile, crossplane.objects.NginxConfigFile)
     for directive in ('events', 'http'):
         assert directive in xconfigfile
         assert len(xconfigfile.get(directive)) == 1
 
     events = xconfigfile.get('events')[0]
-    assert isinstance(events, crossplane.objects.NGXBlockDirective)
+    assert isinstance(events, crossplane.objects.NginxBlockDirective)
     assert len(events.get('worker_connections')) > 0
     assert events.get('worker_connections')[0].args == ['2048']  # changed!
 
     server = xconfigfile.get('http')[0].get('server')[0]
-    assert isinstance(server, crossplane.objects.NGXBlockDirective)
+    assert isinstance(server, crossplane.objects.NginxBlockDirective)
     assert server.get('listen')[0].args == ['127.0.0.1:8080']
     assert server.get('server_name')[0].args == ['default_server']
 
     location = server.get('location')[0]
-    assert isinstance(location, crossplane.objects.NGXBlockDirective)
+    assert isinstance(location, crossplane.objects.NginxBlockDirective)
     assert location.args == ['/']
     assert location.get('return')[0].args == ['200', 'foo bar baz']

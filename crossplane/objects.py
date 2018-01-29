@@ -2,22 +2,14 @@
 from .parser import parse
 
 
-#
-# Functions
-#
-
 def _init_directive(parent, directive_json):
     if 'block' in directive_json:
-        return NGXBlockDirective(parent=parent, **directive_json)
+        return NginxBlockDirective(parent=parent, **directive_json)
     else:
-        return NGXDirective(parent=parent, **directive_json)
+        return NginxDirective(parent=parent, **directive_json)
 
 
-#
-# Classes
-#
-
-class NGXDirective(object):
+class NginxDirective(object):
     __slots__ = ('parent', 'directive', 'line', 'args', 'includes')
 
     def __init__(self, directive='', line=0, args=[], includes=[], parent=None,
@@ -102,11 +94,11 @@ class NGXDirective(object):
             return None, None
 
 
-class NGXBlockDirective(NGXDirective):
+class NginxBlockDirective(NginxDirective):
     __slots__ = ('parent', 'index', 'directive', 'line', 'args', 'block')
 
     def __init__(self, block=[], **kwargs):
-        super(NGXBlockDirective, self).__init__(**kwargs)
+        super(NginxBlockDirective, self).__init__(**kwargs)
         self.index = {}
         self.block = block
 
@@ -145,7 +137,7 @@ class NGXBlockDirective(NGXDirective):
         return result
 
 
-class NGXConfigFile(object):
+class NginxConfigFile(object):
     __slots__ = ('parent', 'index', 'file', 'parsed')
 
     def __init__(self, file='', parsed=[], parent=None, **kwargs):
@@ -203,7 +195,7 @@ class CrossplaneConfig(object):
     def _setup_configs(self):
         configs = []
         for config_json in self.configs:
-            configs.append(NGXConfigFile(parent=self, **config_json))
+            configs.append(NginxConfigFile(parent=self, **config_json))
             self.__index(configs[-1])
 
         self.configs = configs
