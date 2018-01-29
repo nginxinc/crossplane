@@ -599,7 +599,7 @@ To run all the test environments in *parallel* (you need to ``pip install detox`
 
     detox
 
-.. |Build| image:: https://img.shields.io/travis/nginxinc/crossplane.svg
+.. |Build| image:: https://img.shields.io/travis/nginxinc/crossplane/master.svg
    :target: https://travis-ci.org/nginxinc/crossplane
 
 .. |Release| image:: https://img.shields.io/github/release/nginxinc/crossplane.svg
