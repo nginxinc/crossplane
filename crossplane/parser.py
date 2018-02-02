@@ -19,7 +19,7 @@ def _prepare_if_args(stmt):
         args[:] = args[start:end]
 
 
-def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False):
+def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False, comments=False):
     """
     Parses an nginx config file and returns a nested dict payload
     
@@ -28,6 +28,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False):
     :param catch_errors: bool; if False, parse stops after first error
     :param ignore: list or tuple of directives to exclude from the payload
     :param single: bool; if True, including from other files doesn't happen
+    :param comments: bool; if True, including comments to json payload
     :returns: a payload that describes the parsed nginx config
     """
     config_dir = os.path.dirname(filename)
@@ -75,6 +76,19 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False):
                 # if we find a block inside this context, consume it too
                 if token == '{':
                     _parse(parsing, tokens, consume=True)
+                continue
+
+            # if token is comment
+            if token.startswith('#'):
+                if comments:
+                    stmt = {
+                        "directive": "#",
+                        "args": [],
+                        "line": lineno,
+                        "comment": token[1:]
+                    }
+
+                    parsed.append(stmt)
                 continue
 
             # the first token should always(?) be an nginx directive

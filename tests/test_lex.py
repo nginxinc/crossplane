@@ -19,34 +19,48 @@ def test_simple_config():
         ('}', 12), ('}', 13)
     ]
 
-
-def test_messy_config():
-    dirname = os.path.join(here, 'configs', 'messy')
+def test_with_config_comments():
+    dirname = os.path.join(here, 'configs', 'with-comments')
     config = os.path.join(dirname, 'nginx.conf')
     tokens = crossplane.lex(config)
     assert list(tokens) == [
-        ('user', 1), ('nobody', 1), (';', 1), ('events', 3), ('{', 3),
-        ('worker_connections', 3), ('2048', 3), (';', 3), ('}', 3),
-        ('http', 5), ('{', 5), ('access_log', 7), ('off', 7), (';', 7),
-        ('default_type', 7), ('text/plain', 7), (';', 7), ('error_log', 7),
-        ('off', 7), (';', 7), ('server', 8), ('{', 8), ('listen', 9),
-        ('8083', 9), (';', 9), ('return', 10), ('200', 10),
-        ('Ser" \' \' ver\\\\ \\ $server_addr:\\$server_port\\n\\nTime: $time_local\\n\\n', 10),
-        (';', 10), ('}', 11), ('server', 12), ('{', 12),
-        ('listen', 12), ('8080', 12), (';', 12), ('root', 13),
-        ('/usr/share/nginx/html', 13), (';', 13), ('location', 14), ('~', 14),
-        ('/hello/world;', 14), ('{', 14), ('return', 14), ('301', 14),
-        ('/status.html', 14), (';', 14), ('}', 14), ('location', 15),
-        ('/foo', 15), ('{', 15), ('}', 15), ('location', 15), ('/bar', 15),
-        ('{', 15), ('}', 15), ('location', 16), ('/\\{\\;\\}\\ #\\ ab', 16),
-        ('{', 16), ('}', 16), ('if', 17), ('($request_method', 17), ('=', 17),
-        ('P\\{O\\)\\###\\;ST', 17), (')', 17), ('{', 17),
-        ('}', 17), ('location', 18), ('/status.html', 18), ('{', 18),
-        ('try_files', 19), ('/abc/${uri} /abc/${uri}.html', 19), ('=404', 19),
-        (';', 19), ('}', 20), ('location', 21),
-        ('/sta;\n                    tus', 21), ('{', 22), ('return', 22),
-        ('302', 22), ('/status.html', 22), (';', 22), ('}', 22),
-        ('location', 23), ('/upstream_conf', 23), ('{', 23), ('return', 23),
-        ('200', 23), ('/status.html', 23), (';', 23), ('}', 23), ('}', 23),
-        ('server', 24), ('{', 25), ('}', 25), ('}', 25)
+        (u'events', 1), (u'{', 1), (u'worker_connections', 2), (u'1024', 2),
+        (u';', 2), (u'}', 3),(u'#comment', 4), (u'http', 5), (u'{', 5),
+        (u'server', 6), (u'{', 6), (u'listen', 7), (u'127.0.0.1:8080', 7),
+        (u';', 7), (u'#listen', 7), (u'server_name', 8),
+        (u'default_server', 8),(u';', 8), (u'location', 9), (u'/', 9),
+        (u'{', 9), (u'## this is brace', 9), (u'# location /', 10), (u'return', 11), (u'200', 11),
+        (u'foo bar baz', 11), (u';', 11), (u'}', 12), (u'}', 13), (u'}', 14)
     ]
+
+def test_messy_config():
+   dirname = os.path.join(here, 'configs', 'messy')
+   config = os.path.join(dirname, 'nginx.conf')
+   tokens = crossplane.lex(config)
+   assert list(tokens) == [(u'user', 1), (u'nobody', 1), (u';', 1),
+        (u'# hello\\n\\\\n\\\\\\n worlddd  \\#\\\\#\\\\\\# dfsf\\n \\\\n \\\\\\n ', 2),
+        (u'events', 3), (u'{', 3), (u'worker_connections', 3), (u'2048', 3),
+        (u';', 3), (u'}', 3), (u'http', 5), (u'{', 5), (u'#forteen', 5),
+        (u'# this is a comment', 6),(u'access_log', 7), (u'off', 7), (u';', 7),
+        (u'default_type', 7), (u'text/plain', 7), (u';', 7), (u'error_log', 7),
+        (u'off', 7), (u';', 7), (u'server', 8), (u'{', 8), (u'listen', 9),
+        (u'8083', 9), (u';', 9), (u'return', 10), (u'200', 10),
+        (u'Ser" \' \' ver\\\\ \\ $server_addr:\\$server_port\\n\\nTime: $time_local\\n\\n', 10),
+        (u';', 10), (u'}', 11), (u'server', 12), (u'{', 12), (u'listen', 12),
+        (u'8080', 12), (u';', 12), (u'root', 13), (u'/usr/share/nginx/html', 13),
+        (u';', 13), (u'location', 14), (u'~', 14), (u'/hello/world;', 14),
+        (u'{', 14), (u'return', 14), (u'301', 14), (u'/status.html', 14),
+        (u';', 14), (u'}', 14), (u'location', 15), (u'/foo', 15),
+        (u'{', 15), (u'}', 15), (u'location', 15), (u'/bar', 15),
+        (u'{', 15), (u'}', 15), (u'location', 16), (u'/\\{\\;\\}\\ #\\ ab', 16),
+        (u'{', 16), (u'}', 16), (u'# hello', 16), (u'if', 17),
+        (u'($request_method', 17), (u'=', 17), (u'P\\{O\\)\\###\\;ST', 17),
+        (u')', 17), (u'{', 17), (u'}', 17), (u'location', 18), (u'/status.html', 18),
+        (u'{', 18), (u'try_files', 19), (u'/abc/${uri} /abc/${uri}.html', 19),
+        (u'=404', 19), (u';', 19), (u'}', 20), (u'location', 21),
+        (u'/sta;\n                    tus', 21), (u'{', 22), (u'return', 22),
+        (u'302', 22), (u'/status.html', 22), (u';', 22), (u'}', 22),
+        (u'location', 23), (u'/upstream_conf', 23), (u'{', 23),
+        (u'return', 23), (u'200', 23), (u'/status.html', 23), (u';', 23),
+        (u'}', 23), (u'}', 23), (u'server', 24), (u'{', 25), (u'}', 25),
+        (u'}', 25)]

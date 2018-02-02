@@ -62,12 +62,34 @@ def _enquote(arg):
 
 def build(payload, indent=4, tabs=False):
     padding = '\t' if tabs else ' ' * indent
+    state = {
+        'prev_obj': None,
+        'depth': -1
+    }
 
-    def _build_lines(objs, depth):
-        margin = padding * depth
+    def _put_line(line, obj):
+        margin = padding * state['depth']
+
+        # don't need put \n on first line and after comment
+        if state['prev_obj'] is None:
+            return margin + line
+
+        # trailing comments have to be without \n
+        if obj['directive'] == '#' and obj['line'] == state['prev_obj']['line']:
+            return ' ' + line
+
+        return '\n' + margin + line
+
+    def _build_lines(objs):
+        state['depth'] = state['depth'] + 1
 
         for obj in objs:
             directive = obj['directive']
+
+            if directive == '#':
+                yield _put_line('#' + obj['comment'], obj)
+                continue
+
             args = [_enquote(arg) for arg in obj['args']]
 
             if directive == 'if':
@@ -78,12 +100,18 @@ def build(payload, indent=4, tabs=False):
                 line = directive
 
             if obj.get('block') is None:
-                yield margin + line + ';'
+                yield _put_line(line + ';', obj)
             else:
-                yield margin + line + ' {'
-                for line in _build_lines(obj['block'], depth+1):
-                    yield line
-                yield margin + '}'
+                yield _put_line(line + ' {', obj)
 
-    lines = _build_lines(payload, depth=0)
-    return '\n'.join(lines)
+                # set prev_obj to propper indentation in block
+                state['prev_obj'] = obj
+                for line in _build_lines(obj['block']):
+                    yield line
+                yield _put_line('}', obj)
+
+            state['prev_obj'] = obj
+        state['depth'] = state['depth'] - 1
+
+    lines = _build_lines(payload)
+    return ''.join(lines)
