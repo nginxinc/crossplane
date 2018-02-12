@@ -367,3 +367,181 @@ def test_ignore_directives():
             }
         ]
     }
+
+def test_config_with_comments():
+    dirname = os.path.join(here, 'configs', 'with-comments')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(config, comments=True)
+    assert payload == {
+       "errors" : [],
+       "status" : "ok",
+       "config" : [
+          {
+             "errors" : [],
+             "parsed" : [
+                {
+                   "block" : [
+                      {
+                         "directive" : "worker_connections",
+                         "args" : [
+                            "1024"
+                         ],
+                         "line" : 2
+                      }
+                   ],
+                   "line" : 1,
+                   "args" : [],
+                   "directive" : "events"
+                },
+                {
+                   "line" : 4,
+                   "directive": "#",
+                   "args": [],
+                   "comment" : "comment"
+                },
+                {
+                   "block" : [
+                      {
+                         "args" : [],
+                         "directive" : "server",
+                         "line" : 6,
+                         "block" : [
+                            {
+                               "args" : [
+                                  "127.0.0.1:8080"
+                               ],
+                               "directive" : "listen",
+                               "line" : 7
+                            },
+                            {
+                               "args": [],
+                               "directive": "#",
+                               "comment" : "listen",
+                               "line" : 7
+                            },
+                            {
+                               "args" : [
+                                  "default_server"
+                               ],
+                               "directive" : "server_name",
+                               "line" : 8
+                            },
+                            {
+                               "block" : [
+                                  {
+                                     "args": [],
+                                     "directive": "#",
+                                     "line" : 9,
+                                     "comment" : "# this is brace"
+                                  },
+                                  {
+                                     "args": [],
+                                     "directive": "#",
+                                     "line" : 10,
+                                     "comment" : " location /"
+                                  },
+                                  {
+                                     "line" : 11,
+                                     "directive" : "return",
+                                     "args" : [
+                                        "200",
+                                        "foo bar baz"
+                                     ]
+                                  }
+                               ],
+                               "line" : 9,
+                               "directive" : "location",
+                               "args" : [
+                                  "/"
+                               ]
+                            }
+                         ]
+                      }
+                   ],
+                   "line" : 5,
+                   "args" : [],
+                   "directive" : "http"
+                }
+             ],
+             "status" : "ok",
+             "file" : os.path.join(dirname, 'nginx.conf')
+          }
+       ]
+    }
+
+def test_config_without_comments():
+    dirname = os.path.join(here, 'configs', 'with-comments')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(config, comments=False)
+    assert payload == {
+       "errors" : [],
+       "status" : "ok",
+       "config" : [
+          {
+             "errors" : [],
+             "parsed" : [
+                {
+                   "block" : [
+                      {
+                         "directive" : "worker_connections",
+                         "args" : [
+                            "1024"
+                         ],
+                         "line" : 2
+                      }
+                   ],
+                   "line" : 1,
+                   "args" : [],
+                   "directive" : "events"
+                },
+                {
+                   "block" : [
+                      {
+                         "args" : [],
+                         "directive" : "server",
+                         "line" : 6,
+                         "block" : [
+                            {
+                               "args" : [
+                                  "127.0.0.1:8080"
+                               ],
+                               "directive" : "listen",
+                               "line" : 7
+                            },
+                            {
+                               "args" : [
+                                  "default_server"
+                               ],
+                               "directive" : "server_name",
+                               "line" : 8
+                            },
+                            {
+                               "block" : [
+                                  {
+                                     "line" : 11,
+                                     "directive" : "return",
+                                     "args" : [
+                                        "200",
+                                        "foo bar baz"
+                                     ]
+                                  }
+                               ],
+                               "line" : 9,
+                               "directive" : "location",
+                               "args" : [
+                                  "/"
+                               ]
+                            }
+                         ]
+                      }
+                   ],
+                   "line" : 5,
+                   "args" : [],
+                   "directive" : "http"
+                }
+             ],
+             "status" : "ok",
+             "file" : os.path.join(dirname, 'nginx.conf')
+          }
+       ]
+    }

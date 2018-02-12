@@ -81,6 +81,7 @@ the schema defined below, and dumps the entire thing as a JSON payload.
      --no-catch            only collect first error in file
      --tb-onerror          include tracebacks in config errors
      --single-file         do not include other config files
+     --include-comments    include comments in json
 
 **Privacy and Security**
 

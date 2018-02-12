@@ -43,10 +43,13 @@ def _lex_file_object(file_obj):
             while char.isspace():
                 char, line = next(it)
 
-        # if starting comment then disregard until EOL
+        # if starting comment
         if not token and char == '#':
-            while not char.endswith('\n'):  # don't escape newlines
-                char, line = next(it)
+            while not char.endswith('\n'):
+                token = token + char
+                char, _ = next(it)
+            yield (token, line)
+            token = ''
             continue
 
         if not token:
