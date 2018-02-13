@@ -40,13 +40,13 @@ def test_load_simple():
     # some higher level primitives
     assert location.file == config
 
-    location_ctx, ctx_parent = location.context('server_name', 'listen')
+    location_ctx, ctx_parent = location.environemnt('server_name', 'listen')
     assert location_ctx is not None
     assert ctx_parent is not None
     # found server_name and listen from nearest parent
     assert 'default_server' in location_ctx['server_name']
     assert '127.0.0.1:8080' in location_ctx['listen']
-    # ctx_parent is returned as the actual object containing the context
+    # ctx_parent is returned as the actual object containing the environment
     # (actual mapped object)
     assert ctx_parent == server
 
@@ -57,7 +57,9 @@ def test_load_build_cycle_simple(tmpdir):
 
     xconfig = crossplane.load(config)
 
-    build_config = crossplane.build(xconfig.to_dict()['config'][0]['parsed'])
+    build_config = crossplane.build(
+        xconfig.to_crossplane()['config'][0]['parsed']
+    )
     build_file = tmpdir.join('build1.conf')
     build_file.write(build_config)
     build_xconfig = crossplane.load(build_file.strpath)
@@ -99,7 +101,9 @@ def test_load_build_cycle_with_changes_simple(tmpdir):
     # change events worker_connections
     xconfigfile.get('events')[0].get('worker_connections')[0].args = ['2048']
 
-    build_config = crossplane.build(xconfig.to_dict()['config'][0]['parsed'])
+    build_config = crossplane.build(
+        xconfig.to_crossplane()['config'][0]['parsed']
+    )
     build_file = tmpdir.join('build1.conf')
     build_file.write(build_config)
     build_xconfig = crossplane.load(build_file.strpath)
@@ -129,3 +133,46 @@ def test_load_build_cycle_with_changes_simple(tmpdir):
     assert isinstance(location, crossplane.objects.NginxBlockDirective)
     assert location.args == ['/']
     assert location.get('return')[0].args == ['200', 'foo bar baz']
+
+
+def test_eq():
+    dirname = os.path.join(here, 'configs', 'simple')
+    config = os.path.join(dirname, 'nginx.conf')
+
+    xconfig = crossplane.load(config)
+
+    # only one file
+    xconfigfile = xconfig.get(config)
+
+    # block equals
+    events = xconfigfile.get('events')[0]
+
+    # block with sub-block equals
+    server = xconfigfile.get('http')[0].get('server')[0]
+
+    # single directive equals
+    listen = server.get('listen')[0]
+
+
+def test_modify():
+    dirname = os.path.join(here, 'configs', 'simple')
+    config = os.path.join(dirname, 'nginx.conf')
+
+    xconfig = crossplane.load(config)
+
+    built = crossplane.build(xconfig.to_crossplane(), indent=4, tabs=False)
+
+    assert built == '\n'.join([
+        'events {',
+        '    worker_connections 1024;',
+        '}',
+        'http {',
+        '    server {',
+        '        listen 127.0.0.1:8080;',
+        '        server_name default_server;',
+        '        location / {',
+        "            return 200 'foo bar baz';",
+        '        }',
+        '    }',
+        '}'
+    ])

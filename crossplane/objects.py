@@ -12,12 +12,24 @@ def _init_directive(parent, directive_json):
 class NginxDirective(object):
     __slots__ = ('parent', 'directive', 'line', 'args', 'includes')
 
-    def __init__(self, directive, args, line, includes=[], parent=None):
+    def __init__(self, directive, args, line=None, includes=None, parent=None):
         self.parent = parent
         self.directive = directive
         self.line = line
         self.args = args
-        self.includes = []
+        self.includes = includes if includes is not None else []
+
+    def __hash__(self):
+        return hash((
+            self.directive,
+            tuple(x for x in self.args)
+        ))
+
+    def __eq__(self, other):
+        if callable(getattr(other, '__hash__', None)):
+            return hash(self) == hash(other)
+        else:
+            return False
 
     def __contains__(self, item):
         """
@@ -27,18 +39,34 @@ class NginxDirective(object):
         """
         return False
 
+    def __setattr__(self, name, value):
+        if name == 'args':
+            if not isinstance(value, (list, tuple)) and isinstance(basestring):
+                value = value.split(' ')
+
+        super(NginxDirective, self).__setattr__(name, value)
+
     def get(self, directive):
         """
         Like __contains__, this is stubbed for convenient recursion.
         """
         return []
 
-    def to_dict(self):
+    def to_crossplane(self):
         result = {}
 
+        # exclude slots unique to object layer
         for slot in self.__slots__:
             if slot not in ('parent',):
                 result[slot] = getattr(self, slot)
+
+        # remove line if None
+        if self.line is None:
+            del result['line']
+
+        # remove includes if not include directive
+        if self.directive != 'include':
+            del result['includes']
 
         return result
 
@@ -49,7 +77,7 @@ class NginxDirective(object):
         """
         return self.parent.file
 
-    def context(self, *args):
+    def environment(self, *args):
         """
         Recursively scans parent blocks for a passed list of "context"
         diretives.  These are a list of directives which apply or may apply to
@@ -88,10 +116,10 @@ class NginxDirective(object):
 class NginxBlockDirective(NginxDirective):
     __slots__ = ('parent', 'index', 'directive', 'line', 'args', 'block')
 
-    def __init__(self, block=[], **kwargs):
+    def __init__(self, block=None, **kwargs):
         super(NginxBlockDirective, self).__init__(**kwargs)
         self.index = {}
-        self.block = block
+        self.block = block if block is not None else []
 
         self._setup_block()
 
@@ -108,20 +136,34 @@ class NginxBlockDirective(NginxDirective):
         idx.append(directive)
         self.index[directive.directive] = idx
 
+    def __hash__(self):
+        return hash((
+            self.directive,
+            tuple(x for x in self.args),
+            tuple(x for x in self.block)
+        ))
+
     def __contains__(self, item):
         return item in self.index
 
     def get(self, directive):
         return self.index[directive] if directive in self.index else []
 
-    def to_dict(self):
+    def to_crossplane(self):
         result = {}
 
+        # exclude slots unique to object layer
         for slot in self.__slots__:
             if slot not in ('parent', 'index', 'block'):
                 result[slot] = getattr(self, slot)
 
-        result['block'] = [directive.to_dict() for directive in self.block]
+        # remove line if None
+        if self.line is None:
+            del result['line']
+
+        result['block'] = [
+            directive.to_crossplane() for directive in self.block
+        ]
 
         return result
 
@@ -129,12 +171,12 @@ class NginxBlockDirective(NginxDirective):
 class NginxConfigFile(object):
     __slots__ = ('parent', 'index', 'file', 'parsed')
 
-    def __init__(self, file='', parsed=[], parent=None, **kwargs):
+    def __init__(self, file='', parsed=None, parent=None, **kwargs):
         self.parent = parent
 
         self.index = {}
         self.file = file
-        self.parsed = parsed
+        self.parsed = parsed if parsed is not None else []
 
         self._setup_parsed()
 
@@ -151,20 +193,35 @@ class NginxConfigFile(object):
         idx.append(directive)
         self.index[directive.directive] = idx
 
+    def __hash__(self):
+        return hash((
+            self.file,
+            tuple(x for x in self.parsed)
+        ))
+
+    def __eq__(self, other):
+        if callable(getattr(other, '__hash__', None)):
+            return hash(self) == hash(other)
+        else:
+            return False
+
     def __contains__(self, item):
         return item in self.index
 
     def get(self, directive):
         return self.index[directive] if directive in self.index else []
 
-    def to_dict(self):
+    def to_crossplane(self):
         result = {}
 
+        # exclude slots unique to object layer
         for slot in self.__slots__:
             if slot not in ('parent', 'index', 'parsed'):
                 result[slot] = getattr(self, slot)
 
-        result['parsed'] = [directive.to_dict() for directive in self.parsed]
+        result['parsed'] = [
+            directive.to_crossplane() for directive in self.parsed
+        ]
 
         return result
 
@@ -172,10 +229,10 @@ class NginxConfigFile(object):
 class CrossplaneConfig(object):
     __slots__ = ('index', 'files', 'configs')
 
-    def __init__(self, configs=[]):
+    def __init__(self, configs=None):
         self.index = {}
         self.files = []
-        self.configs = configs
+        self.configs = configs if configs is not None else []
 
         self._setup_configs()
 
@@ -191,6 +248,15 @@ class CrossplaneConfig(object):
         self.index[config.file] = config
         self.files.append(config.file)
 
+    def __hash__(self):
+        return hash(tuple(x for x in self.configs))
+
+    def __eq__(self, other):
+        if callable(getattr(other, '__hash__', None)):
+            return hash(self) == hash(other)
+        else:
+            return False
+
     def __contains__(self, item):
         return item in self.index
 
@@ -200,10 +266,10 @@ class CrossplaneConfig(object):
     def get_include(self, idx):
         return self.index[self.files[idx]]
 
-    def to_dict(self):
+    def to_crossplane(self):
         result = {}
 
-        result['config'] = [config.to_dict() for config in self.configs]
+        result['config'] = [config.to_crossplane() for config in self.configs]
 
         return result
 
