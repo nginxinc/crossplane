@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
+import hashlib
+
 from .parser import parse
+
+import sys
+PYTHON3 = True if sys.version_info[0] >= 3 else False
 
 
 def _init_directive(parent, directive_json):
@@ -9,21 +14,12 @@ def _init_directive(parent, directive_json):
         return NginxDirective(parent=parent, **directive_json)
 
 
-class NginxDirective(object):
-    __slots__ = ('parent', 'directive', 'line', 'args', 'includes')
-
-    def __init__(self, directive, args, line=None, includes=None, parent=None):
-        self.parent = parent
-        self.directive = directive
-        self.line = line
-        self.args = args
-        self.includes = includes if includes is not None else []
+class CrossplaneObject(object):
+    __slots__ = tuple()
+    __meta_slots__ = tuple()
 
     def __hash__(self):
-        return hash((
-            self.directive,
-            tuple(x for x in self.args)
-        ))
+        return hash(self.hexdigest())
 
     def __eq__(self, other):
         if callable(getattr(other, '__hash__', None)):
@@ -39,36 +35,74 @@ class NginxDirective(object):
         """
         return False
 
-    def __setattr__(self, name, value):
-        if name == 'args':
-            if not isinstance(value, (list, tuple)) and isinstance(basestring):
-                value = value.split(' ')
-
-        super(NginxDirective, self).__setattr__(name, value)
-
     def get(self, directive):
         """
         Like __contains__, this is stubbed for convenient recursion.
         """
         return []
 
-    def to_crossplane(self):
+    def to_crossplane(self, include_meta=True):
         result = {}
 
         # exclude slots unique to object layer
         for slot in self.__slots__:
-            if slot not in ('parent',):
+            if slot not in self.__meta_slots__:
                 result[slot] = getattr(self, slot)
 
+        return result
+
+    def hexdigest(self):
+        crossplane_dict = self.to_crossplane(include_meta=False)
+
+        if PYTHON3:
+            return hashlib.sha256(
+                str(crossplane_dict).encode('utf-8')
+            ).hexdigest()
+        else:
+            return hashlib.sha256(
+                unicode(crossplane_dict).encode('utf-8')
+            ).hexdigest()
+
+
+class NginxDirective(CrossplaneObject):
+    __slots__ = ('parent', 'directive', 'line', 'args', 'includes')
+    __meta_slots__ = ('parent',)
+
+    def __init__(self, directive, args, line=None, includes=None, parent=None):
+        self.parent = parent
+        self.directive = directive
+        self.line = line
+        self.args = args
+        self.includes = includes if includes is not None else []
+
+    def to_crossplane(self, include_meta=True):
+        result = super(NginxDirective, self).to_crossplane(include_meta=include_meta)
+
         # remove line if None
-        if self.line is None:
+        if self.line is None or not include_meta:
             del result['line']
 
         # remove includes if not include directive
-        if self.directive != 'include':
-            del result['includes']
+        if self.directive != 'include' or not include_meta:
+            # since this can get called by super of NginxBlockDirective we need
+            # to check that it is in the payload
+            if 'includes' in result:
+                del result['includes']
 
         return result
+
+    def __setattr__(self, name, value):
+        if PYTHON3:
+            basestring = str
+        else:
+            basestring = (str, unicode)
+
+        if name == 'args':
+            if not isinstance(value, (list, tuple)) \
+               and isinstance(value, basestring):
+                value = value.split(' ')
+
+        super(NginxDirective, self).__setattr__(name, value)
 
     @property
     def file(self):
@@ -87,7 +121,7 @@ class NginxDirective(object):
         It follows NGINX inheritance which is, all-or-nothing, lowest level
         directive(s) apply.
         """
-        context = {}
+        environment = {}
 
         for directive_name in args:
             if directive_name in self:
@@ -100,24 +134,25 @@ class NginxDirective(object):
                     values.append(' '.join(directive.args))
 
                 # add this context to context
-                context[directive_name] = \
-                    context.get(directive_name, []) + values
+                environment[directive_name] = \
+                    environment.get(directive_name, []) + values
 
         # if there is a context in this directive/block then return it,
         # otherwise try to find one from the parent
-        if len(context) > 0:
-            return context, self
+        if len(environment) > 0:
+            return environment, self
         elif self.parent is not None:
-            return self.parent.context(*args)
+            return self.parent.environment(*args)
         else:
             return None, None
 
 
 class NginxBlockDirective(NginxDirective):
     __slots__ = ('parent', 'index', 'directive', 'line', 'args', 'block')
+    __meta_slots__ = ('parent', 'index')
 
-    def __init__(self, block=None, **kwargs):
-        super(NginxBlockDirective, self).__init__(**kwargs)
+    def __init__(self, directive, args, line=None, block=None, **kwargs):
+        super(NginxBlockDirective, self).__init__(directive, args, line, **kwargs)
         self.index = {}
         self.block = block if block is not None else []
 
@@ -136,40 +171,26 @@ class NginxBlockDirective(NginxDirective):
         idx.append(directive)
         self.index[directive.directive] = idx
 
-    def __hash__(self):
-        return hash((
-            self.directive,
-            tuple(x for x in self.args),
-            tuple(x for x in self.block)
-        ))
-
     def __contains__(self, item):
         return item in self.index
 
     def get(self, directive):
         return self.index[directive] if directive in self.index else []
 
-    def to_crossplane(self):
-        result = {}
-
-        # exclude slots unique to object layer
-        for slot in self.__slots__:
-            if slot not in ('parent', 'index', 'block'):
-                result[slot] = getattr(self, slot)
-
-        # remove line if None
-        if self.line is None:
-            del result['line']
+    def to_crossplane(self, include_meta=True):
+        result = super(NginxBlockDirective, self).to_crossplane(include_meta=include_meta)
 
         result['block'] = [
-            directive.to_crossplane() for directive in self.block
+            directive.to_crossplane(include_meta=include_meta)
+            for directive in self.block
         ]
 
         return result
 
 
-class NginxConfigFile(object):
+class NginxConfigFile(CrossplaneObject):
     __slots__ = ('parent', 'index', 'file', 'parsed')
+    __meta_slots__ = ('parent', 'index')
 
     def __init__(self, file='', parsed=None, parent=None, **kwargs):
         self.parent = parent
@@ -193,41 +214,26 @@ class NginxConfigFile(object):
         idx.append(directive)
         self.index[directive.directive] = idx
 
-    def __hash__(self):
-        return hash((
-            self.file,
-            tuple(x for x in self.parsed)
-        ))
-
-    def __eq__(self, other):
-        if callable(getattr(other, '__hash__', None)):
-            return hash(self) == hash(other)
-        else:
-            return False
-
     def __contains__(self, item):
         return item in self.index
 
     def get(self, directive):
         return self.index[directive] if directive in self.index else []
 
-    def to_crossplane(self):
-        result = {}
-
-        # exclude slots unique to object layer
-        for slot in self.__slots__:
-            if slot not in ('parent', 'index', 'parsed'):
-                result[slot] = getattr(self, slot)
+    def to_crossplane(self, include_meta=True):
+        result = super(NginxConfigFile, self).to_crossplane(include_meta=include_meta)
 
         result['parsed'] = [
-            directive.to_crossplane() for directive in self.parsed
+            directive.to_crossplane(include_meta=include_meta)
+            for directive in self.parsed
         ]
 
         return result
 
 
-class CrossplaneConfig(object):
+class CrossplaneConfig(CrossplaneObject):
     __slots__ = ('index', 'files', 'configs')
+    __meta_slots__ = ('index', 'files')
 
     def __init__(self, configs=None):
         self.index = {}
@@ -248,28 +254,22 @@ class CrossplaneConfig(object):
         self.index[config.file] = config
         self.files.append(config.file)
 
-    def __hash__(self):
-        return hash(tuple(x for x in self.configs))
-
-    def __eq__(self, other):
-        if callable(getattr(other, '__hash__', None)):
-            return hash(self) == hash(other)
-        else:
-            return False
-
     def __contains__(self, item):
         return item in self.index
 
     def get(self, file):
         return self.index[file] if file in self.index else None
 
-    def get_include(self, idx):
+    def get_include_idx(self, idx):
         return self.index[self.files[idx]]
 
-    def to_crossplane(self):
+    def to_crossplane(self, include_meta=True):
         result = {}
 
-        result['config'] = [config.to_crossplane() for config in self.configs]
+        result['config'] = [
+            config.to_crossplane(include_meta=include_meta)
+            for config in self.configs
+        ]
 
         return result
 
