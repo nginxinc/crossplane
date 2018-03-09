@@ -7,6 +7,9 @@ from .analyzer import analyze, enter_block_ctx
 from .errors import NgxParserDirectiveError
 
 
+# map of external / third-party directives to a parse function
+EXTERNAL_PARSERS = {}
+
 # TODO: raise special errors for invalid "if" args
 def _prepare_if_args(stmt):
     """Removes parentheses from an "if" directive's arguments"""
@@ -97,6 +100,9 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False, co
                 'line': lineno,
                 'args': []
             }
+
+            # handle custom directive parsing here?
+
 
             # parse arguments by reading tokens
             args = stmt['args']
@@ -190,3 +196,13 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False, co
         payload['config'].append(parsing)
 
     return payload
+
+
+def register_external_parser(parser, directives):
+    """
+    :param parser: parser function
+    :param directives: list of directive strings
+    :return:
+    """
+    for directive in directives:
+        EXTERNAL_PARSERS[directive] = parser

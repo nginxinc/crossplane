@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 from .parser import parse
 
+EXTERNAL_OBJECTS = {}
+
 
 def _init_directive(parent, directive_json):
+    if directive_json['directive'] in EXTERNAL_OBJECTS:
+        return EXTERNAL_OBJECTS[directive_json['directive']](parent=parent, **directive_json)
     if 'block' in directive_json:
         return NginxBlockDirective(parent=parent, **directive_json)
     else:
@@ -52,7 +56,7 @@ class NginxDirective(object):
     def context(self, *args):
         """
         Recursively scans parent blocks for a passed list of "context"
-        diretives.  These are a list of directives which apply or may apply to
+        directives.  These are a list of directives which apply or may apply to
         this specific directive.  This method will return a dictionary of
         directives and their args which affect this directive.
 
@@ -224,3 +228,8 @@ def load(filename, **kwargs):
     """
     payload = parse(filename, **kwargs)
     return map(payload)
+
+
+def register_external_object(object_class, directives):
+    for directive in directives:
+        EXTERNAL_OBJECTS[directive] = object_class

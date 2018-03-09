@@ -1948,3 +1948,7 @@ def analyze(fname, stmt, term, ctx=()):
             reason = 'invalid number of arguments in "%s" directive'
 
     raise NgxParserDirectiveArgumentsError(reason % directive, fname, line)
+
+
+def register_external_directive(directive, bitmasks):
+    DIRECTIVES[directive] = bitmasks

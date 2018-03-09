@@ -4,6 +4,7 @@ import io
 
 from .errors import NgxParserSyntaxError
 
+EXTERNAL_LEXERS = {}
 
 def _iterescape(iterable):
     chars = iter(iterable)
@@ -37,6 +38,9 @@ def _lex_file_object(file_obj):
             # if token complete yield it and reset token buffer
             if token:
                 yield (token, token_line)
+                if token in EXTERNAL_LEXERS:
+                    for custom_lexer_token in EXTERNAL_LEXERS[token](it):
+                        yield custom_lexer_token
                 token = ''
 
             # disregard until char isn't a whitespace character
@@ -123,3 +127,8 @@ def lex(filename):
         it = _balance_braces(it, filename)
         for token, line in it:
             yield token, line
+
+
+def register_external_lexer(directives, lexer):
+    for directive in directives:
+        EXTERNAL_LEXERS[directive] = lexer

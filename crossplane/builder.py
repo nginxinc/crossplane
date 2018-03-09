@@ -8,7 +8,7 @@ from .errors import NgxParserDirectiveError
 from .compat import PY2, json
 
 DELIMITERS = ('{', '}', ';')
-
+EXTERNAL_BUILDERS = {}
 
 def _escape(string):
     prev, char = '', ''
@@ -86,6 +86,10 @@ def build(payload, indent=4, tabs=False):
         for obj in objs:
             directive = obj['directive']
 
+            if directive in EXTERNAL_BUILDERS:
+                yield _put_line(EXTERNAL_BUILDERS[directive](obj, padding, state, indent, tabs), obj)
+                continue
+
             if directive == '#':
                 yield _put_line('#' + obj['comment'], obj)
                 continue
@@ -115,3 +119,8 @@ def build(payload, indent=4, tabs=False):
 
     lines = _build_lines(payload)
     return ''.join(lines)
+
+
+def register_external_builder(builder, directives):
+    for directive in directives:
+        EXTERNAL_BUILDERS[directive] = builder
