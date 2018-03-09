@@ -18,7 +18,7 @@ class CrossplaneExtension(object):
         builder.register_external_builder(directives=self.directives.keys(), builder=self.build)
 
     @abc.abstractmethod
-    def lex(self, token_iterator):
+    def lex(self, token_iterator, directive):
         pass
 
     @abc.abstractmethod
