@@ -5,6 +5,7 @@ from crossplane import lexer, builder, objects
 from crossplane.errors import NgxParserBaseException
 from crossplane.ext.abstract import CrossplaneExtension
 
+
 class LuaBlockPlugin(CrossplaneExtension):
     """
     This plugin adds special handling for Lua code block directives (*_by_lua_block)
@@ -15,6 +16,7 @@ class LuaBlockPlugin(CrossplaneExtension):
     def __init__(self):
         super(LuaBlockPlugin, self).__init__()
 
+        # todo maybe: populate the actual directive bit masks if analyzer/parser logic is needed
         self.directives = {
             'access_by_lua_block' : [],
             'balancer_by_lua_block' : [],
@@ -36,7 +38,7 @@ class LuaBlockPlugin(CrossplaneExtension):
         builder.register_external_builder(builder=self.build, directives=self.directives.keys())
         objects.register_external_object(object_class=LuaBlockDirective, directives=self.directives.keys())
 
-    def lex(self, token_iterator):
+    def lex(self, token_iterator, directive):
         in_string = False
         string_enclose = None
         depth = 0
@@ -74,12 +76,20 @@ class LuaBlockPlugin(CrossplaneExtension):
 
             if depth == 0:
                 yield (token, line)
-                yield (";", line)
+                yield (u";", line)
                 raise StopIteration
             token += char
 
+    def lex_set_by_lua_block(self, token_iterator):
+        """
+        https://github.com/openresty/lua-nginx-module#set_by_lua_block
+        The sole *_by_lua_block directive that has an arg
+        :param token_iterator:
+        :return:
+        """
+        pass
+
     def parse(self, parsing, tokens, ctx=(), consume=False):
-        # not needed
         pass
 
     def build(self, stmt, padding, state, indent=4, tabs=False):

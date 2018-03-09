@@ -27,6 +27,7 @@ def _lex_file_object(file_obj):
     """Generates token tuples from an nginx config file object"""
     token = ''  # the token buffer
     token_line = 0  # the line the token starts on
+    is_directive = True
 
     it = itertools.chain.from_iterable(file_obj)
     it = _iterescape(it)  # treat escaped characters differently
@@ -38,10 +39,11 @@ def _lex_file_object(file_obj):
             # if token complete yield it and reset token buffer
             if token:
                 yield (token, token_line)
-                if token in EXTERNAL_LEXERS:
-                    for custom_lexer_token in EXTERNAL_LEXERS[token](it):
+                if is_directive and token in EXTERNAL_LEXERS:
+                    for custom_lexer_token in EXTERNAL_LEXERS[token](it, token):
                         yield custom_lexer_token
                 token = ''
+                is_directive = False
 
             # disregard until char isn't a whitespace character
             while char.isspace():
@@ -61,12 +63,14 @@ def _lex_file_object(file_obj):
 
         # handle parameter expansion syntax (ex: "${var[@]}")
         if token and token[-1] == '$' and char == '{':
+            is_directive = False
             while token[-1] != '}' and not char.isspace():
                 token += char
                 char, line = next(it)
 
         # if a quote is found, add the whole string to the token buffer
         if char in ('"', "'"):
+            is_directive = False
             if token:
                 yield (token, token_line)
                 token = ''
@@ -91,6 +95,7 @@ def _lex_file_object(file_obj):
 
             # this character is a full token so yield it now
             yield (char, line)
+            is_directive = True
             continue
 
         # append char to the token buffer
