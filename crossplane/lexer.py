@@ -42,8 +42,10 @@ def _lex_file_object(file_obj):
                 if is_directive and token in EXTERNAL_LEXERS:
                     for custom_lexer_token in EXTERNAL_LEXERS[token](it, token):
                         yield custom_lexer_token
+                        is_directive = True
+                else:
+                    is_directive = False
                 token = ''
-                is_directive = False
 
             # disregard until char isn't a whitespace character
             while char.isspace():
