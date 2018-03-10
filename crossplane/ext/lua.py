@@ -39,6 +39,20 @@ class LuaBlockPlugin(CrossplaneExtension):
         objects.register_external_object(object_class=LuaBlockDirective, directives=self.directives.keys())
 
     def lex(self, token_iterator, directive):
+        if directive == "set_by_lua_block":
+            # https://github.com/openresty/lua-nginx-module#set_by_lua_block
+            # The sole *_by_lua_block directive that has an arg
+            arg = ''
+            for char, line in token_iterator:
+                if char.isspace():
+                    if arg:
+                        yield (arg, line)
+                        break
+                    while char.isspace():
+                        char, line = next(token_iterator)
+
+                arg += char
+
         in_string = False
         string_enclose = None
         depth = 0
@@ -80,20 +94,17 @@ class LuaBlockPlugin(CrossplaneExtension):
                 raise StopIteration
             token += char
 
-    def lex_set_by_lua_block(self, token_iterator):
-        """
-        https://github.com/openresty/lua-nginx-module#set_by_lua_block
-        The sole *_by_lua_block directive that has an arg
-        :param token_iterator:
-        :return:
-        """
-        pass
-
     def parse(self, parsing, tokens, ctx=(), consume=False):
         pass
 
     def build(self, stmt, padding, state, indent=4, tabs=False):
-        return stmt['directive'] + ' {' + stmt['args'][0] + '}'
+        built = stmt['directive']
+        if built == 'set_by_lua_block':
+            block = stmt['args'][1]
+            built += " %s" % stmt['args'][0]
+        else:
+            block = stmt['args'][0]
+        return built + ' {' + block + '}'
 
 
 class LuaBlockDirective(ExternalDirective):
