@@ -66,7 +66,7 @@ def test_lex_lua_block_tricky():
         (u';', 11),
         (u'rewrite_by_lua_block', 12),
         (
-        u' # have valid braces in Lua code\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        ',
+        u' # have valid braces in Lua code and quotes around directive\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        ',
         16),
         (u';', 16),
         (u'}', 17),
@@ -227,7 +227,7 @@ def test_parse_lua_block_tricky():
                                     },
                                     {
                                         'line': 12,
-                                        'args': [' # have valid braces in Lua code\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        '],
+                                        'args': [' # have valid braces in Lua code and quotes around directive\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        '],
                                         'directive': 'rewrite_by_lua_block'
                                     }
                                 ],
@@ -275,4 +275,4 @@ def test_load_lua_blocks_tricky():
 
     rewrite_by_lua_block = server.get('rewrite_by_lua_block')[0]
     assert isinstance(rewrite_by_lua_block, LuaBlockDirective)
-    assert rewrite_by_lua_block.args == [' # have valid braces in Lua code\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        ']
+    assert rewrite_by_lua_block.args == [' # have valid braces in Lua code and quotes around directive\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        ']

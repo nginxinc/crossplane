@@ -83,8 +83,8 @@ def _lex_file_object(file_obj):
                 char, line = next(it)
 
             yield (token, token_line)
-            if next_token_is_directive and len(token) > 2 and token[1:-1] in EXTERNAL_LEXERS:
-                for custom_lexer_token in EXTERNAL_LEXERS[token[1:-1]](it, token):
+            if next_token_is_directive and token in EXTERNAL_LEXERS:
+                for custom_lexer_token in EXTERNAL_LEXERS[token](it, token):
                     yield custom_lexer_token
                     next_token_is_directive = True
             else:
