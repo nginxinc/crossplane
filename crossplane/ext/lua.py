@@ -12,26 +12,25 @@ class LuaBlockPlugin(CrossplaneExtension):
     We don't need to handle non-block or file directives because those are parsed
     correctly by base Crossplane functionality.
     """
+    # todo maybe: populate the actual directive bit masks if analyzer/parser logic is needed
+    directives = {
+        'access_by_lua_block': [],
+        'balancer_by_lua_block': [],
+        'body_filter_by_lua_block': [],
+        'content_by_lua_block': [],
+        'header_filter_by_lua_block': [],
+        'init_by_lua_block': [],
+        'init_worker_by_lua_block': [],
+        'log_by_lua_block': [],
+        'rewrite_by_lua_block': [],
+        'set_by_lua_block': [],
+        'ssl_certificate_by_lua_block': [],
+        'ssl_session_fetch_by_lua_block': [],
+        'ssl_session_store_by_lua_block': [],
+    }
 
     def __init__(self):
         super(LuaBlockPlugin, self).__init__()
-
-        # todo maybe: populate the actual directive bit masks if analyzer/parser logic is needed
-        self.directives = {
-            'access_by_lua_block' : [],
-            'balancer_by_lua_block' : [],
-            'body_filter_by_lua_block' : [],
-            'content_by_lua_block' : [],
-            'header_filter_by_lua_block' : [],
-            'init_by_lua_block' : [],
-            'init_worker_by_lua_block' : [],
-            'log_by_lua_block' : [],
-            'rewrite_by_lua_block' : [],
-            'set_by_lua_block' : [],
-            'ssl_certificate_by_lua_block' : [],
-            'ssl_session_fetch_by_lua_block' : [],
-            'ssl_session_store_by_lua_block' : [],
-        }
 
     def register_extension(self):
         lexer.register_external_lexer(lexer=self.lex, directives=self.directives.keys())

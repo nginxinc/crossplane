@@ -61,16 +61,21 @@ def test_lex_lua_block_tricky():
         (u"# make sure this doesn't trip up lexers", 4),
         (u'set_by_lua_block', 5), (u'$res', 5),
         (
-        u'  # irregular lua block directive\n            local a = 32\n            local b = 56\n\n            ngx.var.diff = a - b;  -- write to $diff directly\n            return a + b;          -- return the $sum value normally\n        ',
+        u' -- irregular lua block directive\n            local a = 32\n            local b = 56\n\n            ngx.var.diff = a - b;  -- write to $diff directly\n            return a + b;          -- return the $sum value normally\n        ',
         11),
         (u';', 11),
         (u'rewrite_by_lua_block', 12),
         (
-        u' # have valid braces in Lua code and quotes around directive\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        ',
+        u' -- have valid braces in Lua code and quotes around directive\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        ',
         16),
         (u';', 16),
         (u'}', 17),
-        (u'}', 18)
+        (u'upstream', 18),
+        (u'content_by_lua_block', 18),
+        (u'{', 18),
+        (u'# stuff', 19),
+        (u'}', 20),
+        (u'}', 21)
     ]
 
 
@@ -222,16 +227,22 @@ def test_parse_lua_block_tricky():
                                     },
                                     {
                                         'line': 5,
-                                        'args': ['$res', '  # irregular lua block directive\n            local a = 32\n            local b = 56\n\n            ngx.var.diff = a - b;  -- write to $diff directly\n            return a + b;          -- return the $sum value normally\n        '],
+                                        'args': ['$res', ' -- irregular lua block directive\n            local a = 32\n            local b = 56\n\n            ngx.var.diff = a - b;  -- write to $diff directly\n            return a + b;          -- return the $sum value normally\n        '],
                                         'directive': 'set_by_lua_block'
                                     },
                                     {
                                         'line': 12,
-                                        'args': [' # have valid braces in Lua code and quotes around directive\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        '],
+                                        'args': [' -- have valid braces in Lua code and quotes around directive\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        '],
                                         'directive': 'rewrite_by_lua_block'
                                     }
                                 ],
                                 'directive': 'server'
+                            },
+                            {
+                                'line': 18,
+                                'args': ['content_by_lua_block'],
+                                'block': [],
+                                'directive': 'upstream'
                             }
                         ],
                         'directive': 'http'
@@ -267,7 +278,7 @@ def test_load_lua_blocks_tricky():
     set_by_lua_block = server.get('set_by_lua_block')[0]
     assert isinstance(set_by_lua_block, LuaBlockDirective)
     assert len(set_by_lua_block.args) == 2
-    assert set_by_lua_block.args == ['$res', '  # irregular lua block directive\n            local a = 32\n            local b = 56\n\n            ngx.var.diff = a - b;  -- write to $diff directly\n            return a + b;          -- return the $sum value normally\n        ']
+    assert set_by_lua_block.args == ['$res', ' -- irregular lua block directive\n            local a = 32\n            local b = 56\n\n            ngx.var.diff = a - b;  -- write to $diff directly\n            return a + b;          -- return the $sum value normally\n        ']
 
     server_name = server.get('server_name')[0]
     assert isinstance(server_name, NginxDirective)
@@ -275,4 +286,8 @@ def test_load_lua_blocks_tricky():
 
     rewrite_by_lua_block = server.get('rewrite_by_lua_block')[0]
     assert isinstance(rewrite_by_lua_block, LuaBlockDirective)
-    assert rewrite_by_lua_block.args == [' # have valid braces in Lua code and quotes around directive\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        ']
+    assert rewrite_by_lua_block.args == [' -- have valid braces in Lua code and quotes around directive\n            do_something("hello, world!\\nhiya\\n")\n            a = { 1, 2, 3 }\n            btn = iup.button({title="ok"})\n        ']
+
+    upstream = xconfig.configs[0].get('http')[0].get('upstream')[0]
+    assert len(upstream.args) == 1
+    assert upstream.args == ['content_by_lua_block']

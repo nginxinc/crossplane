@@ -7,8 +7,9 @@ from crossplane.objects import NginxDirective, NginxBlockDirective
 
 class CrossplaneExtension(object):
 
-    def __init__(self):
-        self.directives = {}
+    @abc.abstractproperty
+    def directives(self):
+        pass
 
     def register_extension(self):
         for directive, bitmasks in self.directives.iteritems():

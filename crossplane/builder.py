@@ -87,7 +87,9 @@ def build(payload, indent=4, tabs=False):
             directive = obj['directive']
 
             if directive in EXTERNAL_BUILDERS:
-                yield _put_line(EXTERNAL_BUILDERS[directive](obj, padding, state, indent, tabs), obj)
+                external_builder = EXTERNAL_BUILDERS[directive]
+                built = external_builder(obj, padding, state, indent, tabs)
+                yield _put_line(built, obj)
                 continue
 
             if directive == '#':
