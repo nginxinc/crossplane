@@ -101,10 +101,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False, co
                 'args': []
             }
 
-            if stmt['directive'] in EXTERNAL_PARSERS:
-                EXTERNAL_PARSERS[stmt['directive']](stmt, parsing, tokens, ctx, consume)
-                parsed.append(stmt)
-                continue
+            # todo: add external parser checking and handling
 
             # parse arguments by reading tokens
             args = stmt['args']
