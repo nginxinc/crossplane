@@ -88,7 +88,7 @@ class LuaBlockPlugin(CrossplaneExtension):
                 raise StopIteration
             token += char
 
-    def parse(self, statement, parsing, tokens, ctx=(), consume=False):
+    def parse(self, stmt, parsing, tokens, ctx=(), consume=False):
         pass
 
     def build(self, stmt, padding, state, indent=4, tabs=False):
