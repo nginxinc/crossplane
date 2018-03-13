@@ -198,7 +198,7 @@ def test_parse_lua_block_simple():
 def test_parse_lua_block_tricky():
     dirname = os.path.join(tests_dir, 'configs', 'lua-block-tricky')
     config = os.path.join(dirname, 'nginx.conf')
-    payload = crossplane.parse(config)
+    payload = crossplane.parse(config, comments=True)
     assert payload == {
         'status': 'ok',
         'errors': [],
@@ -226,6 +226,12 @@ def test_parse_lua_block_tricky():
                                         'directive': 'server_name'
                                     },
                                     {
+                                        'comment': u" make sure this doesn't trip up lexers",
+                                        'line': 4,
+                                        'args': [],
+                                        'directive': '#'
+                                    },
+                                    {
                                         'line': 5,
                                         'args': ['$res', ' -- irregular lua block directive\n            local a = 32\n            local b = 56\n\n            ngx.var.diff = a - b;  -- write to $diff directly\n            return a + b;          -- return the $sum value normally\n        '],
                                         'directive': 'set_by_lua_block'
@@ -241,7 +247,14 @@ def test_parse_lua_block_tricky():
                             {
                                 'line': 18,
                                 'args': ['content_by_lua_block'],
-                                'block': [],
+                                'block': [
+                                    {
+                                        'comment': ' stuff',
+                                        'line': 19,
+                                        'args': [],
+                                        'directive': '#'
+                                    }
+                                ],
                                 'directive': 'upstream'
                             }
                         ],

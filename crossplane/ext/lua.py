@@ -29,9 +29,6 @@ class LuaBlockPlugin(CrossplaneExtension):
         'ssl_session_store_by_lua_block': [],
     }
 
-    def __init__(self):
-        super(LuaBlockPlugin, self).__init__()
-
     def register_extension(self):
         lexer.register_external_lexer(lexer=self.lex, directives=self.directives.keys())
         builder.register_external_builder(builder=self.build, directives=self.directives.keys())
