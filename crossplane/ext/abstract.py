@@ -22,7 +22,7 @@ class CrossplaneExtension(object):
         pass
 
     @abc.abstractmethod
-    def parse(self, parsing, tokens, ctx=(), consume=False):
+    def parse(self, statement, parsing, tokens, ctx=(), consume=False):
         pass
 
     @abc.abstractmethod
