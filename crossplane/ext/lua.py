@@ -53,8 +53,6 @@ class LuaBlockPlugin(CrossplaneExtension):
 
                 arg += char
 
-        in_string = False
-        string_enclose = None
         depth = 0
         token = ''
 
@@ -72,17 +70,17 @@ class LuaBlockPlugin(CrossplaneExtension):
         # Grab everything in Lua block as a single token
         # and watch for curly brace '{' in strings
         for char, line in token_iterator:
-            if char == '{' and not in_string:
+            if char == '{':
                 depth += 1
-            elif char == '}' and not in_string:
+            elif char == '}':
                 depth -= 1
-            elif char == '"' or char == '\'':
-                if in_string and string_enclose == char:
-                    in_string = False
-                    string_enclose = None
-                elif not in_string:
-                    in_string = True
-                    string_enclose = char
+            elif char in ('"', "'"):
+                quote = char
+                token += quote
+                char, line = next(token_iterator)
+                while char != quote:
+                    token += quote if char == quote else char
+                    char, line = next(token_iterator)
 
             if depth < 0:
                 reason = 'unxpected "}"'
@@ -90,7 +88,7 @@ class LuaBlockPlugin(CrossplaneExtension):
 
             if depth == 0:
                 yield (token, line)
-                yield (u";", line)
+                yield (';', line)
                 raise StopIteration
             token += char
 
@@ -111,7 +109,7 @@ class LuaBlockDirective(ExternalDirective):
     """
     For now we are treating everything inside of a Lua block
     as a single string argument, so there's no need to represent this
-    as an extend of ExternalBlockDirective
+    as an extension of ExternalBlockDirective
     """
     pass
 

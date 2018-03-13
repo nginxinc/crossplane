@@ -101,8 +101,9 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False, co
                 'args': []
             }
 
-            # handle custom directive parsing here?
-
+            if stmt['directive'] in EXTERNAL_PARSERS:
+                EXTERNAL_PARSERS[stmt['directive']](parsing, tokens, ctx, consume)
+                continue
 
             # parse arguments by reading tokens
             args = stmt['args']

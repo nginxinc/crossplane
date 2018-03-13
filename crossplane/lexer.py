@@ -27,7 +27,7 @@ def _lex_file_object(file_obj):
     """Generates token tuples from an nginx config file object"""
     token = ''  # the token buffer
     token_line = 0  # the line the token starts on
-    is_directive = True
+    next_token_is_directive = True
 
     it = itertools.chain.from_iterable(file_obj)
     it = _iterescape(it)  # treat escaped characters differently
@@ -39,12 +39,12 @@ def _lex_file_object(file_obj):
             # if token complete yield it and reset token buffer
             if token:
                 yield (token, token_line)
-                if is_directive and token in EXTERNAL_LEXERS:
+                if next_token_is_directive and token in EXTERNAL_LEXERS:
                     for custom_lexer_token in EXTERNAL_LEXERS[token](it, token):
                         yield custom_lexer_token
-                        is_directive = True
+                        next_token_is_directive = True
                 else:
-                    is_directive = False
+                    next_token_is_directive = False
                 token = ''
 
             # disregard until char isn't a whitespace character
@@ -65,14 +65,13 @@ def _lex_file_object(file_obj):
 
         # handle parameter expansion syntax (ex: "${var[@]}")
         if token and token[-1] == '$' and char == '{':
-            is_directive = False
+            next_token_is_directive = False
             while token[-1] != '}' and not char.isspace():
                 token += char
                 char, line = next(it)
 
         # if a quote is found, add the whole string to the token buffer
         if char in ('"', "'"):
-            is_directive = False
             if token:
                 yield (token, token_line)
                 token = ''
@@ -84,6 +83,12 @@ def _lex_file_object(file_obj):
                 char, line = next(it)
 
             yield (token, token_line)
+            if next_token_is_directive and len(token) > 2 and token[1:-1] in EXTERNAL_LEXERS:
+                for custom_lexer_token in EXTERNAL_LEXERS[token[1:-1]](it, token):
+                    yield custom_lexer_token
+                    next_token_is_directive = True
+            else:
+                next_token_is_directive = False
             token = ''
 
             continue
@@ -97,7 +102,7 @@ def _lex_file_object(file_obj):
 
             # this character is a full token so yield it now
             yield (char, line)
-            is_directive = True
+            next_token_is_directive = True
             continue
 
         # append char to the token buffer
