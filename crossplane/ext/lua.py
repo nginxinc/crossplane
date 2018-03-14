@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from .abstract import ExternalDirective
-from crossplane import lexer, builder, objects
+from crossplane.lexer import register_external_lexer
+from crossplane.builder import register_external_builder
 from crossplane.errors import NgxParserBaseException
 from crossplane.ext.abstract import CrossplaneExtension
 
@@ -30,9 +29,8 @@ class LuaBlockPlugin(CrossplaneExtension):
     }
 
     def register_extension(self):
-        lexer.register_external_lexer(lexer=self.lex, directives=self.directives.keys())
-        builder.register_external_builder(builder=self.build, directives=self.directives.keys())
-        objects.register_external_object(object_class=LuaBlockDirective, directives=self.directives.keys())
+        register_external_lexer(directives=self.directives, lexer=self.lex)
+        register_external_builder(directives=self.directives, builder=self.build)
 
     def lex(self, token_iterator, directive):
         if directive == "set_by_lua_block":
@@ -99,15 +97,6 @@ class LuaBlockPlugin(CrossplaneExtension):
         else:
             block = stmt['args'][0]
         return built + ' {' + block + '}'
-
-
-class LuaBlockDirective(ExternalDirective):
-    """
-    For now we are treating everything inside of a Lua block
-    as a single string argument, so there's no need to represent this
-    as an extension of ExternalBlockDirective
-    """
-    pass
 
 
 class LuaBlockParserSyntaxError(NgxParserBaseException):

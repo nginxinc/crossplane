@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
-
-import abc
-from crossplane import analyzer, lexer, parser, builder
-from crossplane.objects import NginxDirective, NginxBlockDirective
+from crossplane.analyzer import register_external_directives
+from crossplane.lexer import register_external_lexer
+from crossplane.parser import register_external_parser
+from crossplane.builder import register_external_builder
 
 
 class CrossplaneExtension(object):
     directives = {}
 
     def register_extension(self):
-        for directive, bitmasks in self.directives.iteritems():
-            analyzer.register_external_directive(directive=directive, bitmasks=bitmasks)
-        lexer.register_external_lexer(directives=self.directives.keys(), lexer=self.lex)
-        parser.register_external_parser(directives=self.directives.keys(), parser=self.parse)
-        builder.register_external_builder(directives=self.directives.keys(), builder=self.build)
+        register_external_directives(directive=self.directives)
+        register_external_lexer(directives=self.directives, lexer=self.lex)
+        register_external_parser(directives=self.directives, parser=self.parse)
+        register_external_builder(directives=self.directives, builder=self.build)
 
     def lex(self, token_iterator, directive):
         raise NotImplementedError
@@ -23,11 +22,3 @@ class CrossplaneExtension(object):
 
     def build(self, stmt, padding, state, indent=4, tabs=False):
         raise NotImplementedError
-
-
-class ExternalDirective(NginxDirective):
-    pass
-
-
-class ExternalBlockDirective(NginxBlockDirective):
-    pass

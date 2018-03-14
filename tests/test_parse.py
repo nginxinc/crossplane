@@ -2,8 +2,7 @@
 import os
 
 import crossplane
-
-here = os.path.dirname(__file__)
+from . import here
 
 
 def test_includes_regular():
