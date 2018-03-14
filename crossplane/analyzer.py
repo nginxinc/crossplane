@@ -1950,5 +1950,7 @@ def analyze(fname, stmt, term, ctx=()):
     raise NgxParserDirectiveArgumentsError(reason % directive, fname, line)
 
 
-def register_external_directive(directive, bitmasks):
-    DIRECTIVES[directive] = bitmasks
+def register_external_directives(directives):
+    for directive, bitmasks in directives.iteritems():
+        if bitmasks:
+            DIRECTIVES[directive] = bitmasks
