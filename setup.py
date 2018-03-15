@@ -7,11 +7,11 @@ import os
 import shutil
 import sys
 
-from setuptools import setup, Command
+from setuptools import find_packages, setup, Command
 
 from crossplane import (
     __title__, __summary__, __url__, __version__, __author__, __email__,
-    __package__, __license__
+    __license__
 )
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -64,7 +64,7 @@ setup(
     author=__author__,
     author_email=__email__,
     url=__url__,
-    packages=[__package__],
+    packages=find_packages(exclude=['tests']),
     license=__license__,
     classifiers=[
         'Development Status :: 3 - Alpha',
