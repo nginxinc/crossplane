@@ -2,7 +2,7 @@
 from .parser import parse
 from .lexer import lex
 from .builder import build
-from .ext.lua import LuaBlockPlugin
+from crossplane.ext.lua import LuaBlockPlugin
 
 __all__ = ['parse', 'lex', 'build']
 
