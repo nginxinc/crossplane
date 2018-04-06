@@ -11,6 +11,8 @@ help:
 clean:
 	@rm -fr 'dist/'
 	@rm -fr 'build/'
+	@rm -fr '.cache/'
+	@rm -fr '.pytest_cache/'
 	@find . -path '*/.*' -prune -o -name '__pycache__' -exec rm -fr {} +
 	@find . -path '*/.*' -prune -o -name '*.egg-info' -exec rm -fr {} +
 	@find . -path '*/.*' -prune -o -name '*.py[co]' -exec rm -fr {} +
