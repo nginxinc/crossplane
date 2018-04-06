@@ -367,6 +367,7 @@ def test_ignore_directives():
         ]
     }
 
+
 def test_config_with_comments():
     dirname = os.path.join(here, 'configs', 'with-comments')
     config = os.path.join(dirname, 'nginx.conf')
@@ -468,6 +469,7 @@ def test_config_with_comments():
        ]
     }
 
+
 def test_config_without_comments():
     dirname = os.path.join(here, 'configs', 'with-comments')
     config = os.path.join(dirname, 'nginx.conf')
@@ -543,4 +545,67 @@ def test_config_without_comments():
              "file" : os.path.join(dirname, 'nginx.conf')
           }
        ]
+    }
+
+
+def test_parse_strict():
+    dirname = os.path.join(here, 'configs', 'spelling-mistake')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(config, comments=True, strict=True)
+    assert payload == {
+        'status' : 'failed',
+        'errors' : [
+            {
+                'file': os.path.join(dirname, 'nginx.conf'),
+                'error': 'unknown directive "proxy_passs" in %s:7' % os.path.join(dirname, 'nginx.conf'),
+                'line': 7
+            }
+        ],
+        'config' : [
+           {
+              'file' : os.path.join(dirname, 'nginx.conf'),
+              'status' : 'failed',
+              'errors' : [
+                  {
+                     'error': 'unknown directive "proxy_passs" in %s:7' % os.path.join(dirname, 'nginx.conf'),
+                     'line': 7
+                  }
+              ],
+              'parsed' : [
+                 {
+                    'directive' : 'events',
+                    'line' : 1,
+                    'args' : [],
+                    'block' : []
+                 },
+                 {
+                    'directive' : 'http',
+                    'line' : 3,
+                    'args' : [],
+                    'block' : [
+                       {
+                          'directive' : 'server',
+                          'line' : 4,
+                          'args' : [],
+                          'block' : [
+                             {
+                                'directive' : 'location',
+                                'line' : 5,
+                                'args' : ['/'],
+                                'block' : [
+                                   {
+                                       'directive' : '#',
+                                       'line' : 6,
+                                       'args' : [],
+                                       'comment': 'directive is misspelled'
+                                   }
+                                ]
+                             }
+                          ]
+                       }
+                    ]
+                 }
+              ]
+           }
+        ]
     }

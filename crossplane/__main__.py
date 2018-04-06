@@ -28,14 +28,23 @@ def _dump_payload(obj, fp, indent):
     fp.write(json.dumps(obj, **kwargs) + '\n')
 
 
-def parse(filename, out, indent=None, catch=None, tb_onerror=None, ignore='', single=False, comments=False):
+def parse(filename, out, indent=None, catch=None, tb_onerror=None, ignore='',
+          single=False, comments=False, strict=False):
+
     ignore = ignore.split(',') if ignore else []
 
     def callback(e):
         exc = sys.exc_info() + (10,)
         return ''.join(format_exception(*exc)).rstrip()
 
-    kwargs = {'catch_errors': catch, 'ignore': ignore, 'single': single, 'comments': comments}
+    kwargs = {
+        'catch_errors': catch,
+        'ignore': ignore,
+        'single': single,
+        'comments': comments,
+        'strict': strict
+    }
+
     if tb_onerror:
         kwargs['onerror'] = callback
 
@@ -171,6 +180,7 @@ def parse_args(args=None):
     p.add_argument('--tb-onerror', action='store_true', help='include tracebacks in config errors')
     p.add_argument('--single-file', action='store_true', dest='single', help='do not include other config files')
     p.add_argument('--include-comments', action='store_true', dest='comments', help='include comments in json')
+    p.add_argument('--strict', action='store_true', help='raise errors for unknown directives')
 
     p = create_subparser(build, 'builds an nginx config from a json payload')
     p.add_argument('filename', help='the file with the config payload')
