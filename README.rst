@@ -65,7 +65,9 @@ the schema defined below, and dumps the entire thing as a JSON payload.
 
 .. code-block::
 
-   usage: crossplane parse [-h] [-o OUT] [-i NUM] [--no-catch] [--tb-onerror]
+   usage: crossplane parse [-h] [-o OUT] [-i NUM] [--ignore DIRECTIVES]
+                           [--no-catch] [--tb-onerror] [--single-file]
+                           [--include-comments] [--strict]
                            filename
 
    parses a json payload for an nginx config
@@ -82,6 +84,7 @@ the schema defined below, and dumps the entire thing as a JSON payload.
      --tb-onerror          include tracebacks in config errors
      --single-file         do not include other config files
      --include-comments    include comments in json
+     --strict              raise errors for unknown directives
 
 **Privacy and Security**
 
