@@ -22,7 +22,8 @@ def _prepare_if_args(stmt):
         args[:] = args[start:end]
 
 
-def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False, comments=False):
+def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
+        comments=False, strict=False):
     """
     Parses an nginx config file and returns a nested dict payload
     
@@ -32,6 +33,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False, co
     :param ignore: list or tuple of directives to exclude from the payload
     :param single: bool; if True, including from other files doesn't happen
     :param comments: bool; if True, including comments to json payload
+    :param strict: bool; if True, unrecognized directives raise errors
     :returns: a payload that describes the parsed nginx config
     """
     config_dir = os.path.dirname(filename)
@@ -90,7 +92,6 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False, co
                         "line": lineno,
                         "comment": token[1:]
                     }
-
                     parsed.append(stmt)
                 continue
 
@@ -123,7 +124,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False, co
 
             try:
                 # raise errors if this statement is invalid
-                analyze(fname, stmt, token, ctx)
+                analyze(fname, stmt, token, ctx, strict=strict)
             except NgxParserDirectiveError as e:
                 if catch_errors:
                     _handle_error(parsing, e)

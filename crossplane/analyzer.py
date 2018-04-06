@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
-from .errors import \
-    NgxParserDirectiveContextError, NgxParserDirectiveArgumentsError
+from .errors import (
+    NgxParserDirectiveUnknownError,
+    NgxParserDirectiveContextError,
+    NgxParserDirectiveArgumentsError
+)
 
 # bit masks for different directive argument styles
 NGX_CONF_NOARGS = 0x00000001  # 0 args
@@ -1899,9 +1902,14 @@ def enter_block_ctx(stmt, ctx):
     return ctx + (stmt['directive'],)
 
 
-def analyze(fname, stmt, term, ctx=()):
+def analyze(fname, stmt, term, ctx=(), strict=False):
     directive = stmt['directive']
     line = stmt['line']
+
+    # if strict and directive isn't recognized then throw error
+    if strict and directive not in DIRECTIVES:
+        reason = 'unknown directive "%s"' % directive
+        raise NgxParserDirectiveUnknownError(reason, fname, line)
 
     # if we don't know where this directive is allowed and how
     # many arguments it can take then don't bother analyzing it
