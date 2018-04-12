@@ -609,3 +609,127 @@ def test_parse_strict():
            }
         ]
     }
+
+
+def test_parse_missing_semicolon():
+    dirname = os.path.join(here, 'configs', 'missing-semicolon')
+
+    # test correct error is raised when broken proxy_pass is in upper block
+    above_config = os.path.join(dirname, 'broken-above.conf')
+    above_payload = crossplane.parse(above_config)
+    assert above_payload == {
+        "status": "failed",
+        "errors": [
+            {
+                "file": above_config,
+                "error": "directive \"proxy_pass\" is not terminated by \";\" in %s:4" % above_config,
+                "line": 4
+            }
+        ],
+        "config": [
+            {
+                "file": above_config,
+                "status": "failed",
+                "errors": [
+                    {
+                        "error": "directive \"proxy_pass\" is not terminated by \";\" in %s:4" % above_config,
+                        "line": 4
+                    }
+                ],
+                "parsed": [
+                    {
+                        "directive": "http",
+                        "line": 1,
+                        "args": [],
+                        "block": [
+                            {
+                                "directive": "server",
+                                "line": 2,
+                                "args": [],
+                                "block": [
+                                    {
+                                        "directive": "location",
+                                        "line": 3,
+                                        "args": ["/is-broken"],
+                                        "block": []
+                                    },
+                                    {
+                                        "directive": "location",
+                                        "line": 6,
+                                        "args": ["/not-broken"],
+                                        "block": [
+                                            {
+                                                "directive": "proxy_pass",
+                                                "line": 7,
+                                                "args": ["http://not.broken.example"]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+
+    # test correct error is raised when broken proxy_pass is in lower block
+    below_config = os.path.join(dirname, 'broken-below.conf')
+    below_payload = crossplane.parse(below_config)
+    assert below_payload == {
+        "status": "failed",
+        "errors": [
+            {
+                "file": below_config,
+                "error": "directive \"proxy_pass\" is not terminated by \";\" in %s:7" % below_config,
+                "line": 7
+            }
+        ],
+        "config": [
+            {
+                "file": below_config,
+                "status": "failed",
+                "errors": [
+                    {
+                        "error": "directive \"proxy_pass\" is not terminated by \";\" in %s:7" % below_config,
+                        "line": 7
+                    }
+                ],
+                "parsed": [
+                    {
+                        "directive": "http",
+                        "line": 1,
+                        "args": [],
+                        "block": [
+                            {
+                                "directive": "server",
+                                "line": 2,
+                                "args": [],
+                                "block": [
+                                    {
+                                        "directive": "location",
+                                        "line": 3,
+                                        "args": ["/not-broken"],
+                                        "block": [
+                                            {
+                                                "directive": "proxy_pass",
+                                                "line": 4,
+                                                "args": ["http://not.broken.example"]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "directive": "location",
+                                        "line": 6,
+                                        "args": ["/is-broken"],
+                                        "block": []
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
