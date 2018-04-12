@@ -107,7 +107,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
             # parse arguments by reading tokens
             args = stmt['args']
             token, __ = next(tokens)  # disregard line numbers of args
-            while token not in ('{', ';'):
+            while token not in ('{', ';', '}'):
                 stmt['args'].append(token)
                 token, __ = next(tokens)
 
@@ -131,7 +131,10 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
 
                     # if it was a block but shouldn't have been then consume
                     if e.strerror.endswith(' is not terminated by ";"'):
-                        _parse(parsing, tokens, consume=True)
+                        if token != '}':
+                            _parse(parsing, tokens, consume=True)
+                        else:
+                            break
 
                     # keep on parsin'
                     continue
