@@ -6,9 +6,9 @@ from .lexer import lex
 from .analyzer import analyze, enter_block_ctx
 from .errors import NgxParserDirectiveError
 
-
 # map of external / third-party directives to a parse function
 EXTERNAL_PARSERS = {}
+
 
 # TODO: raise special errors for invalid "if" args
 def _prepare_if_args(stmt):
@@ -23,7 +23,7 @@ def _prepare_if_args(stmt):
 
 
 def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
-        comments=False, strict=False):
+        comments=False, strict=False, combine=False):
     """
     Parses an nginx config file and returns a nested dict payload
     
@@ -31,6 +31,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
     :param onerror: function that determines what's saved in "callback"
     :param catch_errors: bool; if False, parse stops after first error
     :param ignore: list or tuple of directives to exclude from the payload
+    :param combine: bool; if True, use includes to create a single config obj
     :param single: bool; if True, including from other files doesn't happen
     :param comments: bool; if True, including comments to json payload
     :param strict: bool; if True, unrecognized directives raise errors
@@ -83,26 +84,32 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
                     _parse(parsing, tokens, consume=True)
                 continue
 
+            # the first token should always(?) be an nginx directive
+            directive = token
+
+            if combine:
+                stmt = {
+                    'file': fname,
+                    'directive': directive,
+                    'line': lineno,
+                    'args': []
+                }
+            else:
+                stmt = {
+                    'directive': directive,
+                    'line': lineno,
+                    'args': []
+                }
+
             # if token is comment
-            if token.startswith('#'):
+            if directive.startswith('#'):
                 if comments:
-                    stmt = {
-                        "directive": "#",
-                        "args": [],
-                        "line": lineno,
-                        "comment": token[1:]
-                    }
+                    stmt['directive'] = '#'
+                    stmt['comment'] = token[1:]
                     parsed.append(stmt)
                 continue
 
-            # the first token should always(?) be an nginx directive
-            stmt = {
-                'directive': token,
-                'line': lineno,
-                'args': []
-            }
-
-            # todo: add external parser checking and handling
+            # TODO: add external parser checking and handling
 
             # parse arguments by reading tokens
             args = stmt['args']
@@ -148,6 +155,8 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
                     pattern = os.path.join(config_dir, args[0])
 
                 stmt['includes'] = []
+
+                # get names of all included files
                 if glob.has_magic(pattern):
                     fnames = glob.glob(pattern)
                 else:
@@ -198,7 +207,50 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
 
         payload['config'].append(parsing)
 
-    return payload
+    if combine:
+        return _combine_parsed_configs(payload)
+    else:
+        return payload
+
+
+def _combine_parsed_configs(old_payload):
+    """
+    Combines config files into one by using include directives.
+
+    :param old_payload: payload that's normally returned by parse()
+    :return: the new combined payload
+    """
+    old_configs = old_payload['config']
+
+    def _perform_includes(block):
+        for stmt in block:
+            if 'block' in stmt:
+                stmt['block'] = list(_perform_includes(stmt['block']))
+            if 'includes' in stmt:
+                for index in stmt['includes']:
+                    config = old_configs[index]['parsed']
+                    for stmt in _perform_includes(config):
+                        yield stmt
+            else:
+                yield stmt  # do not yield include stmt itself
+
+    combined_config = {
+        'file': old_configs[0]['file'],
+        'status': 'ok',
+        'errors': [],
+        'parsed': []
+    }
+
+    for config in old_configs:
+        combined_config['errors'] += config['errors']
+        if config['status'] == 'failed':
+            combined_config['status'] = 'failed'
+
+    first_config = old_configs[0]['parsed']
+    combined_config['parsed'] += _perform_includes(first_config)
+    combined_payload = dict(old_payload, config=[combined_config])
+
+    return combined_payload
 
 
 def register_external_parser(parser, directives):

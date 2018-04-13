@@ -82,6 +82,7 @@ the schema defined below, and dumps the entire thing as a JSON payload.
      --ignore DIRECTIVES   ignore directives (comma-separated)
      --no-catch            only collect first error in file
      --tb-onerror          include tracebacks in config errors
+     --combine             use includes to create one single file
      --single-file         do not include other config files
      --include-comments    include comments in json
      --strict              raise errors for unknown directives

@@ -29,7 +29,7 @@ def _dump_payload(obj, fp, indent):
 
 
 def parse(filename, out, indent=None, catch=None, tb_onerror=None, ignore='',
-          single=False, comments=False, strict=False):
+          single=False, comments=False, strict=False, combine=False):
 
     ignore = ignore.split(',') if ignore else []
 
@@ -40,6 +40,7 @@ def parse(filename, out, indent=None, catch=None, tb_onerror=None, ignore='',
     kwargs = {
         'catch_errors': catch,
         'ignore': ignore,
+        'combine': combine,
         'single': single,
         'comments': comments,
         'strict': strict
@@ -178,6 +179,7 @@ def parse_args(args=None):
     p.add_argument('--ignore', metavar='DIRECTIVES', default='', help='ignore directives (comma-separated)')
     p.add_argument('--no-catch', action='store_false', dest='catch', help='only collect first error in file')
     p.add_argument('--tb-onerror', action='store_true', help='include tracebacks in config errors')
+    p.add_argument('--combine', action='store_true', help='use includes to create one single file')
     p.add_argument('--single-file', action='store_true', dest='single', help='do not include other config files')
     p.add_argument('--include-comments', action='store_true', dest='comments', help='include comments in json')
     p.add_argument('--strict', action='store_true', help='raise errors for unknown directives')
