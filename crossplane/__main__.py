@@ -9,7 +9,7 @@ from traceback import format_exception
 from . import __version__
 from .lexer import lex as lex_file
 from .parser import parse as parse_file
-from .builder import build as build_file, _enquote, DELIMITERS
+from .builder import build as build_string, build_files, _enquote, DELIMITERS
 from .errors import NgxParserBaseException
 from .compat import PY2, json, input
 
@@ -53,64 +53,55 @@ def parse(filename, out, indent=None, catch=None, tb_onerror=None, ignore='',
     _dump_payload(payload, out, indent=indent)
 
 
-def build(filename, dirname, force, indent, tabs, header, stdout, verbose):
-    with open(filename, 'r') as fp:
-        payload = json.load(fp)
+def build(filename, dirname=None, force=False, indent=4, tabs=False,
+          header=True, stdout=False, verbose=False):
 
     if dirname is None:
         dirname = os.getcwd()
 
-    existing = []
-    dirs_to_make = []
+    # read the json payload from the specified file
+    with open(filename, 'r') as fp:
+        payload = json.load(fp)
 
-    # find which files from the json payload will overwrite existing files and
-    # which directories need to be created in order for the config to be built
-    for config in payload['config']:
-        path = config['file']
-        if not os.path.isabs(path):
-            path = os.path.join(dirname, path)
-        dirpath = os.path.dirname(path)
-        if os.path.exists(path):
-            existing.append(path)
-        elif not os.path.exists(dirpath) and dirpath not in dirs_to_make:
-            dirs_to_make.append(dirpath)
+    # find which files from the json payload will overwrite existing files
+    if not force and not stdout:
+        existing = []
+        for config in payload['config']:
+            path = config['file']
+            if not os.path.isabs(path):
+                path = os.path.join(dirname, path)
+            if os.path.exists(path):
+                existing.append(path)
+        # ask the user if it's okay to overwrite existing files
+        if existing:
+            print('building {} would overwrite these files:'.format(filename))
+            print('\n'.join(existing))
+            if not _prompt_yes():
+                print('not overwritten')
+                return
 
-    # ask the user if it's okay to overwrite existing files
-    if existing and not force and not stdout:
-        print('building {} would overwrite these files:'.format(filename))
-        print('\n'.join(existing))
-        if not _prompt_yes():
-            print('not overwritten')
-            return
-
-    # make directories necessary for the config to be built
-    for dirpath in dirs_to_make:
-        os.makedirs(dirpath)
+    # if stdout is set then just print each file after another like nginx -T
+    if stdout:
+        for config in payload['config']:
+            path = config['file']
+            if not os.path.isabs(path):
+                path = os.path.join(dirname, path)
+            parsed = config['parsed']
+            output = build_string(parsed, indent=indent, tabs=tabs, header=header)
+            output = output.rstrip() + '\n'
+            print('# ' + path + '\n' + output)
+        return
 
     # build the nginx configuration file from the json payload
-    for config in payload['config']:
-        path = os.path.join(dirname, config['file'])
+    build_files(payload, dirname=dirname, indent=indent, tabs=tabs, header=header)
 
-        if header:
-            output = (
-                '# This config was built from JSON using NGINX crossplane.\n'
-                '# If you encounter any bugs please report them here:\n'
-                '# https://github.com/nginxinc/crossplane/issues\n'
-                '\n'
-            )
-        else:
-            output = ''
-
-        parsed = config['parsed']
-        output += build_file(parsed, indent, tabs) + '\n'
-
-        if stdout:
-            print('# ' + path + '\n' + output)
-        else:
-            with open(path, 'w') as fp:
-                fp.write(output)
-            if verbose:
-                print('wrote to ' + path)
+    # if verbose print the paths of the config files that were created
+    if verbose:
+        for config in payload['config']:
+            path = config['file']
+            if not os.path.isabs(path):
+                path = os.path.join(dirname, path)
+            print('wrote to ' + path)
 
 
 def lex(filename, out, indent=None, line_numbers=False):

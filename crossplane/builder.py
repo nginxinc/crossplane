@@ -10,6 +10,7 @@ from .compat import PY2, json
 DELIMITERS = ('{', '}', ';')
 EXTERNAL_BUILDERS = {}
 
+
 def _escape(string):
     prev, char = '', ''
     for char in string:
@@ -60,7 +61,7 @@ def _enquote(arg):
     return arg
 
 
-def build(payload, indent=4, tabs=False):
+def build(payload, indent=4, tabs=False, header=False):
     padding = '\t' if tabs else ' ' * indent
     state = {
         'prev_obj': None,
@@ -119,8 +120,44 @@ def build(payload, indent=4, tabs=False):
             state['prev_obj'] = obj
         state['depth'] = state['depth'] - 1
 
-    lines = _build_lines(payload)
+    if header:
+        lines = [
+            '# This config was built from JSON using NGINX crossplane.\n',
+            '# If you encounter any bugs please report them here:\n',
+            '# https://github.com/nginxinc/crossplane/issues\n',
+            '\n'
+        ]
+    else:
+        lines = []
+
+    lines += _build_lines(payload)
     return ''.join(lines)
+
+
+def build_files(payload, dirname=None, indent=4, tabs=False, header=False):
+    """
+    Uses a full nginx config payload (output of crossplane.parse) to build
+    config files, then writes those files to disk.
+    """
+    if dirname is None:
+        dirname = os.getcwd()
+
+    for config in payload['config']:
+        path = config['file']
+        if not os.path.isabs(path):
+            path = os.path.join(dirname, path)
+
+        # make directories that need to be made for the config to be built
+        dirpath = os.path.dirname(path)
+        if not os.path.exists(dirpath):
+            os.makedirs(dirpath)
+
+        # build then create the nginx config file using the json payload
+        parsed = config['parsed']
+        output = build(parsed, indent=indent, tabs=tabs, header=header)
+        output = output.rstrip() + '\n'
+        with open(path, 'w') as fp:
+            fp.write(output)
 
 
 def register_external_builder(builder, directives):
