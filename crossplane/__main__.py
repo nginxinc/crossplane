@@ -89,6 +89,8 @@ def build(filename, dirname=None, force=False, indent=4, tabs=False,
             parsed = config['parsed']
             output = build_string(parsed, indent=indent, tabs=tabs, header=header)
             output = output.rstrip() + '\n'
+            if PY2:
+                output = output.encode('utf-8')
             print('# ' + path + '\n' + output)
         return
 
