@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+
 import crossplane
 from . import compare_parsed_and_built
 
@@ -177,6 +179,33 @@ def test_build_with_comments():
         '    }',
         '}'
     ])
+
+
+def test_build_files_with_unicode(tmpdir):
+    assert len(tmpdir.listdir()) == 0
+    payload = {
+        "status": "ok",
+        "errors": [],
+        "config": [
+            {
+                "file": "nginx.conf",
+                "status": "ok",
+                "errors": [],
+                "parsed": [
+                    {
+                        "directive": "user",
+                        "line": 1,
+                        "args": [u"\u6e2c\u8a66"],
+                    }
+                ]
+            }
+        ]
+    }
+    crossplane.builder.build_files(payload, dirname=tmpdir.strpath)
+    built_files = tmpdir.listdir()
+    assert len(built_files) == 1
+    assert built_files[0].strpath == os.path.join(tmpdir.strpath, 'nginx.conf')
+    assert built_files[0].read_text('utf-8') == u'user \u6e2c\u8a66;\n'
 
 
 def test_compare_parsed_and_built_simple(tmpdir):
