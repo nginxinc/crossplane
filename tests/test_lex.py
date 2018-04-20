@@ -18,6 +18,7 @@ def test_simple_config():
         ('}', 12), ('}', 13)
     ]
 
+
 def test_with_config_comments():
     dirname = os.path.join(here, 'configs', 'with-comments')
     config = os.path.join(dirname, 'nginx.conf')
@@ -32,11 +33,13 @@ def test_with_config_comments():
         (u'foo bar baz', 11), (u';', 11), (u'}', 12), (u'}', 13), (u'}', 14)
     ]
 
+
 def test_messy_config():
-   dirname = os.path.join(here, 'configs', 'messy')
-   config = os.path.join(dirname, 'nginx.conf')
-   tokens = crossplane.lex(config)
-   assert list(tokens) == [(u'user', 1), (u'nobody', 1), (u';', 1),
+    dirname = os.path.join(here, 'configs', 'messy')
+    config = os.path.join(dirname, 'nginx.conf')
+    tokens = crossplane.lex(config)
+    assert list(tokens) == [
+        (u'user', 1), (u'nobody', 1), (u';', 1),
         (u'# hello\\n\\\\n\\\\\\n worlddd  \\#\\\\#\\\\\\# dfsf\\n \\\\n \\\\\\n ', 2),
         (u'events', 3), (u'{', 3), (u'worker_connections', 3), (u'2048', 3),
         (u';', 3), (u'}', 3), (u'http', 5), (u'{', 5), (u'#forteen', 5),
@@ -70,4 +73,15 @@ def test_messy_config():
         (u'API_PREFIX=/api', 26), (u'API_PREFIX', 26), (u'=/nginx-api', 26),
         (u';', 26), (u'}', 26), (u'}', 26), (u'server', 27),
         (u'{', 28), (u'}', 28),
-        (u'}', 28)]
+        (u'}', 28)
+   ]
+
+
+def test_quote_behavior():
+    dirname = os.path.join(here, 'configs', 'quote-behavior')
+    config = os.path.join(dirname, 'nginx.conf')
+    tokens = crossplane.lex(config)
+    assert list(token for token, line in tokens) == [
+        'outer-quote', 'left', '-quote', 'right-"quote"', 'inner"-"quote', ';',
+        '', '', 'left-empty', 'right-empty""', 'inner""empty', ';',
+    ]
