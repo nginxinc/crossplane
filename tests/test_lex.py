@@ -24,13 +24,13 @@ def test_with_config_comments():
     config = os.path.join(dirname, 'nginx.conf')
     tokens = crossplane.lex(config)
     assert list(tokens) == [
-        (u'events', 1), (u'{', 1), (u'worker_connections', 2), (u'1024', 2),
-        (u';', 2), (u'}', 3),(u'#comment', 4), (u'http', 5), (u'{', 5),
-        (u'server', 6), (u'{', 6), (u'listen', 7), (u'127.0.0.1:8080', 7),
-        (u';', 7), (u'#listen', 7), (u'server_name', 8),
-        (u'default_server', 8),(u';', 8), (u'location', 9), (u'/', 9),
-        (u'{', 9), (u'## this is brace', 9), (u'# location /', 10), (u'return', 11), (u'200', 11),
-        (u'foo bar baz', 11), (u';', 11), (u'}', 12), (u'}', 13), (u'}', 14)
+        ('events', 1), ('{', 1), ('worker_connections', 2), ('1024', 2),
+        (';', 2), ('}', 3),('#comment', 4), ('http', 5), ('{', 5),
+        ('server', 6), ('{', 6), ('listen', 7), ('127.0.0.1:8080', 7),
+        (';', 7), ('#listen', 7), ('server_name', 8),
+        ('default_server', 8),(';', 8), ('location', 9), ('/', 9),
+        ('{', 9), ('## this is brace', 9), ('# location /', 10), ('return', 11), ('200', 11),
+        ('foo bar baz', 11), (';', 11), ('}', 12), ('}', 13), ('}', 14)
     ]
 
 
@@ -39,42 +39,34 @@ def test_messy_config():
     config = os.path.join(dirname, 'nginx.conf')
     tokens = crossplane.lex(config)
     assert list(tokens) == [
-        (u'user', 1), (u'nobody', 1), (u';', 1),
-        (u'# hello\\n\\\\n\\\\\\n worlddd  \\#\\\\#\\\\\\# dfsf\\n \\\\n \\\\\\n ', 2),
-        (u'events', 3), (u'{', 3), (u'worker_connections', 3), (u'2048', 3),
-        (u';', 3), (u'}', 3), (u'http', 5), (u'{', 5), (u'#forteen', 5),
-        (u'# this is a comment', 6),(u'access_log', 7), (u'off', 7), (u';', 7),
-        (u'default_type', 7), (u'text/plain', 7), (u';', 7), (u'error_log', 7),
-        (u'off', 7), (u';', 7), (u'server', 8), (u'{', 8), (u'listen', 9),
-        (u'8083', 9), (u';', 9), (u'return', 10), (u'200', 10),
-        (u'Ser" \' \' ver\\\\ \\ $server_addr:\\$server_port\\n\\nTime: $time_local\\n\\n', 10),
-        (u';', 10), (u'}', 11), (u'server', 12), (u'{', 12), (u'listen', 12),
-        (u'8080', 12), (u';', 12), (u'root', 13), (u'/usr/share/nginx/html', 13),
-        (u';', 13), (u'location', 14), (u'~', 14), (u'/hello/world;', 14),
-        (u'{', 14), (u'return', 14), (u'301', 14), (u'/status.html', 14),
-        (u';', 14), (u'}', 14), (u'location', 15), (u'/foo', 15),
-        (u'{', 15), (u'}', 15), (u'location', 15), (u'/bar', 15),
-        (u'{', 15), (u'}', 15), (u'location', 16), (u'/\\{\\;\\}\\ #\\ ab', 16),
-        (u'{', 16), (u'}', 16), (u'# hello', 16), (u'if', 17),
-        (u'($request_method', 17), (u'=', 17), (u'P\\{O\\)\\###\\;ST', 17),
-        (u')', 17), (u'{', 17), (u'}', 17), (u'location', 18), (u'/status.html', 18),
-        (u'{', 18), (u'try_files', 19), (u'/abc/${uri} /abc/${uri}.html', 19),
-        (u'=404', 19), (u';', 19), (u'}', 20), (u'location', 21),
-        (u'/bar', 21), (u'{', 21), (u'sub_filter', 21), (u'API="/bar"', 21),
-        (u'API="/foo-bar"', 21), (u';', 21), (u'}', 21), (u'location', 22),
-        (u'/sta;\n                    tus', 22), (u'{', 23), (u'return', 23),
-        (u'302', 23), (u'/status.html', 23), (u';', 23), (u'}', 23),
-        (u'location', 24), (u'/upstream_conf', 24), (u'{', 24),
-        (u'return', 24), (u'200', 24), (u'/status.html', 24), (u';', 24),
-        (u'}', 24), (u'location', 25), (u'/quotes_inside_string', 25),
-        (u'{', 25), (u'sub_filter', 25), (u'API_PREFIX=/api', 25),
-        (u'API_"PREFIX"=/nginx-api', 25), (u';', 25), (u'}', 25),
-        (u'location', 26), (u'/quotes', 26), (u'{', 26), (u'sub_filter', 26),
-        (u'API_PREFIX=/api', 26), (u'API_PREFIX', 26), (u'=/nginx-api', 26),
-        (u';', 26), (u'}', 26), (u'}', 26), (u'server', 27),
-        (u'{', 28), (u'}', 28),
-        (u'}', 28)
-   ]
+        ('user', 1), ('nobody', 1), (';', 1),
+        ('# hello\\n\\\\n\\\\\\n worlddd  \\#\\\\#\\\\\\# dfsf\\n \\\\n \\\\\\n ', 2),
+        ('events', 3), ('{', 3), ('worker_connections', 3), ('2048', 3),
+        (';', 3), ('}', 3), ('http', 5), ('{', 5), ('#forteen', 5),
+        ('# this is a comment', 6),('access_log', 7), ('off', 7), (';', 7),
+        ('default_type', 7), ('text/plain', 7), (';', 7), ('error_log', 7),
+        ('off', 7), (';', 7), ('server', 8), ('{', 8), ('listen', 9),
+        ('8083', 9), (';', 9), ('return', 10), ('200', 10),
+        ('Ser" \' \' ver\\\\ \\ $server_addr:\\$server_port\\n\\nTime: $time_local\\n\\n', 10),
+        (';', 10), ('}', 11), ('server', 12), ('{', 12), ('listen', 12),
+        ('8080', 12), (';', 12), ('root', 13), ('/usr/share/nginx/html', 13),
+        (';', 13), ('location', 14), ('~', 14), ('/hello/world;', 14),
+        ('{', 14), ('return', 14), ('301', 14), ('/status.html', 14),
+        (';', 14), ('}', 14), ('location', 15), ('/foo', 15),
+        ('{', 15), ('}', 15), ('location', 15), ('/bar', 15),
+        ('{', 15), ('}', 15), ('location', 16), ('/\\{\\;\\}\\ #\\ ab', 16),
+        ('{', 16), ('}', 16), ('# hello', 16), ('if', 17),
+        ('($request_method', 17), ('=', 17), ('P\\{O\\)\\###\\;ST', 17),
+        (')', 17), ('{', 17), ('}', 17), ('location', 18), ('/status.html', 18),
+        ('{', 18), ('try_files', 19), ('/abc/${uri} /abc/${uri}.html', 19),
+        ('=404', 19), (';', 19), ('}', 20), ('location', 21),
+        ('/sta;\n                    tus', 21), ('{', 22), ('return', 22),
+        ('302', 22), ('/status.html', 22), (';', 22), ('}', 22),
+        ('location', 23), ('/upstream_conf', 23), ('{', 23),
+        ('return', 23), ('200', 23), ('/status.html', 23), (';', 23),
+        ('}', 23), ('}', 23), ('server', 24), ('{', 25), ('}', 25),
+        ('}', 25)
+    ]
 
 
 def test_quote_behavior():
