@@ -28,7 +28,6 @@ def _lex_file_object(file_obj):
     token = ''  # the token buffer
     token_line = 0  # the line the token starts on
     next_token_is_directive = True
-    quote_inside_token = False
 
     it = itertools.chain.from_iterable(file_obj)
     it = _iterescape(it)  # treat escaped characters differently
@@ -73,20 +72,16 @@ def _lex_file_object(file_obj):
 
         # if a quote is found, add the whole string to the token buffer
         if char in ('"', "'"):
+            # if a quote is inside a token, treat it like any other char
             if token:
                 token += char
-                quote_inside_token = True
+                continue
 
             quote = char
             char, line = next(it)
             while char != quote:
                 token += quote if char == '\\' + quote else char
                 char, line = next(it)
-
-            if quote_inside_token:
-                token += quote
-                quote_inside_token = False
-                continue
 
             yield (token, token_line)
             if next_token_is_directive and token in EXTERNAL_LEXERS:
