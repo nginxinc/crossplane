@@ -75,5 +75,5 @@ def test_quote_behavior():
     tokens = crossplane.lex(config)
     assert list(token for token, line in tokens) == [
         'outer-quote', 'left', '-quote', 'right-"quote"', 'inner"-"quote', ';',
-        '', '', 'left-empty', 'right-empty""', 'inner""empty', ';',
+        '', '', 'left-empty', 'right-empty""', 'inner""empty', 'right-empty-single"', ';',
     ]
