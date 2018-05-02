@@ -16,7 +16,7 @@ __author__ = 'Arie van Luttikhuizen'
 __email__ = 'aluttik@gmail.com'
 
 __license__ = 'Apache 2.0'
-__copyright__ = 'Copyright 2017 NGINX, Inc.'
+__copyright__ = 'Copyright 2018 NGINX, Inc.'
 
 default_enabled_extensions = [LuaBlockPlugin()]
 for extension in default_enabled_extensions:
