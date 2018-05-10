@@ -851,3 +851,67 @@ def test_parse_missing_semicolon():
             }
         ]
     }
+
+
+def test_combine_parsed_missing_values():
+    dirname = os.path.join(here, 'configs', 'includes-regular')
+    config = os.path.join(dirname, 'nginx.conf')
+    separate = {
+        "config": [
+            {
+                "file": "example1.conf",
+                "parsed": [
+                    {
+                        "directive": "include",
+                        "line": 1,
+                        "args": ["example2.conf"],
+                        "includes": [1]
+                    }
+                ]
+            },
+            {
+                "file": "example2.conf",
+                "parsed": [
+                    {
+                        "directive": "events",
+                        "line": 1,
+                        "args": [],
+                        "block": []
+                    },
+                    {
+                        "directive": "http",
+                        "line": 2,
+                        "args": [],
+                        "block": []
+                    }
+                ]
+            }
+        ]
+    }
+    combined = crossplane.parser._combine_parsed_configs(separate)
+    import json; print(json.dumps(combined, indent=4))
+    assert combined == {
+        "status": "ok",
+        "errors": [],
+        "config": [
+            {
+                "file": "example1.conf",
+                "status": "ok",
+                "errors": [],
+                "parsed": [
+                    {
+                        "directive": "events",
+                        "line": 1,
+                        "args": [],
+                        "block": []
+                    },
+                    {
+                        "directive": "http",
+                        "line": 2,
+                        "args": [],
+                        "block": []
+                    }
+                ]
+            }
+        ]
+    }
