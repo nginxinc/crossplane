@@ -70,95 +70,84 @@ def test_build_nested_and_multiple_args():
 def test_build_with_comments():
     payload = [
         {
-           "args" : [],
-           "block" : [
-              {
-                 "args" : [
-                    "1024"
-                 ],
-                 "line" : 2,
-                 "directive" : "worker_connections"
-              }
-           ],
-           "line" : 1,
-           "directive" : "events"
+            "directive": "events",
+            "line": 1,
+            "args": [],
+            "block": [
+                {
+                    "directive": "worker_connections",
+                    "line": 2,
+                    "args": ["1024"]
+                }
+            ]
         },
         {
-           "directive" : "#",
-           "line" : 4,
-           "comment" : "comment",
-           "args" : []
+            "directive": "#",
+            "line": 4,
+            "args": [],
+            "comment": "comment"
         },
         {
-           "directive" : "http",
-           "block" : [
-              {
-                 "args" : [],
-                 "line" : 6,
-                 "block" : [
-                    {
-                       "args" : [
-                          "127.0.0.1:8080"
-                       ],
-                       "line" : 7,
-                       "directive" : "listen"
-                    },
-                    {
-                       "directive" : "#",
-                       "line" : 7,
-                       "comment" : "listen",
-                       "args" : []
-                    },
-                    {
-                       "args" : [
-                          "default_server"
-                       ],
-                       "directive" : "server_name",
-                       "line" : 8
-                    },
-                    {
-                       "args" : [
-                          "/"
-                       ],
-                       "directive" : "location",
-                       "line" : 9,
-                       "block" : [
-                          {
-                             "args" : [],
-                             "directive" : "#",
-                             "line" : 9,
-                             "comment" : "# this is brace"
-                          },
-                          {
-                             "directive" : "#",
-                             "comment" : " location /",
-                             "line" : 10,
-                             "args" : []
-                          },
-                          {
-                             "directive" : "#",
-                             "comment" : " is here",
-                             "line" : 11,
-                             "args" : []
-                          },
-                          {
-                             "args" : [
-                                "200",
-                                "foo bar baz"
-                             ],
-                             "line" : 11,
-                             "directive" : "return"
-                          }
-                       ]
-                    }
-                 ],
-                 "directive" : "server"
-              }
-           ],
-           "line" : 5,
-           "args" : []
+            "directive": "http",
+            "line": 5,
+            "args": [],
+            "block": [
+                {
+                    "directive": "server",
+                    "line": 6,
+                    "args": [],
+                    "block": [
+                        {
+                            "directive": "listen",
+                            "line": 7,
+                            "args": ["127.0.0.1:8080"]
+                        },
+                        {
+                            "directive": "#",
+                            "line": 7,
+                            "args": [],
+                            "comment": "listen"
+                        },
+                        {
+                            "directive": "server_name",
+                            "line": 8,
+                            "args": ["default_server"]
+                        },
+                        {
+                            "directive": "location",
+                            "line": 9,
+                            "args": ["/"],
+                            "block": [
+                                {
+                                    "directive": "#",
+                                    "line": 9,
+                                    "args": [],
+                                    "comment": "# this is brace"
+                                },
+                                {
+                                    "directive": "#",
+                                    "line": 10,
+                                    "args": [],
+                                    "comment": " location /"
+                                },
+                                {
+                                    "directive": "#",
+                                    "line": 11,
+                                    "args": [],
+                                    "comment": " is here"
+                                },
+                                {
+                                    "directive": "return",
+                                    "line": 12,
+                                    "args": ["200", "foo bar baz"]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
-     ]
+    ]
 
     built = crossplane.build(payload, indent=4, tabs=False)
 
@@ -179,6 +168,29 @@ def test_build_with_comments():
         '    }',
         '}'
     ])
+
+
+def test_build_files_with_missing_status_and_errors(tmpdir):
+    assert len(tmpdir.listdir()) == 0
+    payload = {
+        "config": [
+            {
+                "file": "nginx.conf",
+                "parsed": [
+                    {
+                        "directive": "user",
+                        "line": 1,
+                        "args": ["nginx"],
+                    }
+                ]
+            }
+        ]
+    }
+    crossplane.builder.build_files(payload, dirname=tmpdir.strpath)
+    built_files = tmpdir.listdir()
+    assert len(built_files) == 1
+    assert built_files[0].strpath == os.path.join(tmpdir.strpath, 'nginx.conf')
+    assert built_files[0].read_text('utf-8') == 'user nginx;\n'
 
 
 def test_build_files_with_unicode(tmpdir):

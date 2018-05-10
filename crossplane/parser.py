@@ -242,14 +242,18 @@ def _combine_parsed_configs(old_payload):
     }
 
     for config in old_configs:
-        combined_config['errors'] += config['errors']
-        if config['status'] == 'failed':
+        combined_config['errors'] += config.get('errors', [])
+        if config.get('status', 'ok') == 'failed':
             combined_config['status'] = 'failed'
 
     first_config = old_configs[0]['parsed']
     combined_config['parsed'] += _perform_includes(first_config)
-    combined_payload = dict(old_payload, config=[combined_config])
 
+    combined_payload = {
+        'status': old_payload.get('status', 'ok'),
+        'errors': old_payload.get('errors', []),
+        'config': [combined_config]
+    }
     return combined_payload
 
 
