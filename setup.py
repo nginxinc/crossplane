@@ -64,7 +64,7 @@ setup(
     author=__author__,
     author_email=__email__,
     url=__url__,
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(exclude=['tests','tests.*']),
     license=__license__,
     classifiers=[
         'Development Status :: 3 - Alpha',
