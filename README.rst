@@ -1,10 +1,17 @@
-==========
-crossplane
-==========
+.. raw:: html
 
-|Build| |Release| |License| |Versions|
+    <p align="center">
+    <a href="https://github.com/nginxinc/crossplane"><img src="https://raw.githubusercontent.com/nginxinc/crossplane/master/ext/crossplane.png" width="40%" height="40%"></a>
+    </p>
+    <h1 align="center">crossplane</h1>
+    <h3 align="center">Reliable and fast NGINX configuration file parser and builder</h3>
+    <p align="center">
+    <a href="https://travis-ci.org/nginxinc/crossplane"><img src="https://img.shields.io/travis/nginxinc/crossplane/master.svg"></a>
+    <a href="https://github.com/nginxinc/crossplane/releases"><img src="https://img.shields.io/github/release/nginxinc/crossplane.svg"></a>
+    <a href="https://pypi.python.org/pypi/crossplane"><img src="https://img.shields.io/pypi/l/crossplane.svg"></a>
+    <a href="https://pypi.python.org/pypi/crossplane"><img src="https://img.shields.io/pypi/pyversions/crossplane.svg"></a>
+    </p>
 
-Reliable and fast NGINX configuration file parser and builder.
 
 - `Install`_
 - `Command Line Interface`_
@@ -610,16 +617,4 @@ To run a subset of tests::
 To run all the test environments in *parallel* (you need to ``pip install detox``)::
 
     detox
-
-.. |Build| image:: https://img.shields.io/travis/nginxinc/crossplane/master.svg
-   :target: https://travis-ci.org/nginxinc/crossplane
-
-.. |Release| image:: https://img.shields.io/github/release/nginxinc/crossplane.svg
-   :target: https://github.com/nginxinc/crossplane/releases
-
-.. |License| image:: https://img.shields.io/pypi/l/crossplane.svg
-   :target: https://pypi.python.org/pypi/crossplane
-
-.. |Versions| image:: https://img.shields.io/pypi/pyversions/crossplane.svg
-   :target: https://pypi.python.org/pypi/crossplane
 
