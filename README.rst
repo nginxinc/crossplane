@@ -21,6 +21,8 @@ Reliable and fast NGINX configuration file parser and builder.
   - `crossplane.build()`_
   - `crossplane.lex()`_
 
+- `Other Languages`_
+
 - `Contributing`_
 
   - `Types of Contributions`_
@@ -488,6 +490,11 @@ crossplane.lex()
 ``crossplane.lex`` generates 2-tuples. Inserting these pairs into a list will result in a long list similar
 to what you can see in the `crossplane lex`_ section when the ``--line-numbers`` flag is used, except it
 will obviously be a Python list of tuples and not one giant JSON string.
+
+Other Languages
+===============
+
+* Ruby port by `@gdanko <https://github.com/gdanko>`_: https://github.com/gdanko/crossplane
 
 
 Contributing
