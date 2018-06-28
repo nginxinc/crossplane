@@ -230,3 +230,7 @@ def test_compare_parsed_and_built_messy(tmpdir):
 
 def test_compare_parsed_and_built_messy_with_comments(tmpdir):
     compare_parsed_and_built('with-comments', 'nginx.conf', tmpdir, comments=True)
+
+
+def test_compare_parsed_and_built_messy_with_comments(tmpdir):
+    compare_parsed_and_built('empty-value-map', 'nginx.conf', tmpdir)
