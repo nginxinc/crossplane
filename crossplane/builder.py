@@ -82,6 +82,9 @@ def build(payload, indent=4, tabs=False, header=False):
         for obj in objs:
             directive = obj['directive']
 
+            if directive == '':
+                directive = _enquote(directive)
+
             if directive in EXTERNAL_BUILDERS:
                 external_builder = EXTERNAL_BUILDERS[directive]
                 built = external_builder(obj, padding, state, indent, tabs)
