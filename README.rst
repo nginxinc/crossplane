@@ -596,7 +596,7 @@ Pull Request Guidelines
 Before you submit a pull request, check that it meets these guidelines:
 
 #. The pull request should include tests.
-#. The pull request should work for CPython 2.6, 2.7, 3.3, and 3.6, and for PyPy.
+#. The pull request should work for CPython 2.6, 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7 and for PyPy.
    Check https://travis-ci.org/nginxinc/crossplane under pull requests for
    active pull requests or run the ``tox`` command and make sure that the
    tests pass for all supported Python versions.
