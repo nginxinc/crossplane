@@ -10,7 +10,7 @@ __title__ = 'crossplane'
 __summary__ = 'Reliable and fast NGINX configuration file parser.'
 __url__ = 'https://github.com/nginxinc/crossplane'
 
-__version__ = '0.4.4'
+__version__ = '0.4.5'
 
 __author__ = 'Arie van Luttikhuizen'
 __email__ = 'aluttik@gmail.com'
