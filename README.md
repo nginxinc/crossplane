@@ -28,7 +28,7 @@
       - [Pull Request Guidelines](#pull-request-guidelines)
       - [Tips](#tips)
 
-# Install
+## Install
 
 You can install both the [Command Line
 Interface](#command-line-interface) and [Python Module](#python-module)
@@ -36,7 +36,7 @@ via:
 
     pip install crossplane
 
-# Command Line Interface
+## Command Line Interface
 
 ```
 usage: crossplane <command> [options]
@@ -54,7 +54,7 @@ commands:
   help                  show help for commands
 ```
 
-## crossplane parse
+### crossplane parse
 
 This command will take a path to a main NGINX config file as input, then
 parse the entire config into the schema defined below, and dumps the
@@ -98,7 +98,7 @@ for our users'
 
     --ignore=auth_basic_user_file,secure_link_secret,ssl_certificate_key,ssl_client_certificate,ssl_password_file,ssl_stapling_file,ssl_trusted_certificate
 
-### Schema
+#### Schema
 
 **Response Object**
 
@@ -175,7 +175,7 @@ caused.
 
 </div>
 
-### Example
+#### Example
 
 The main NGINX config file is at `/etc/nginx/nginx.conf`:
 
@@ -329,7 +329,7 @@ The prettified JSON output would look like this:
 }
 ```
 
-### crossplane parse (advanced)
+#### crossplane parse (advanced)
 
 This tool uses two flags that can change how `crossplane` handles
 errors.
@@ -342,7 +342,7 @@ objects in the JSON output, each containing a string representation of
 the traceback that would have been raised by the parser if the exception
 had not been caught. This can be useful for logging purposes.
 
-## crossplane build
+### crossplane build
 
 This command will take a path to a file as input. The file should
 contain a JSON representation of an NGINX config that has the structure
@@ -371,7 +371,7 @@ optional arguments:
   --stdout              write configs to stdout instead
 ```
 
-## crossplane lex
+### crossplane lex
 
 This command takes an NGINX config file, splits it into tokens by
 removing whitespace and comments, and dumps the list of tokens as a JSON
@@ -392,7 +392,7 @@ optional arguments:
   -n, --line-numbers    include line numbers in json payload
 ```
 
-### Example
+#### Example
 
 Passing in this NGINX config file at `/etc/nginx/nginx.conf`:
 
@@ -425,7 +425,7 @@ like:
 [["events",1],["{",1],["worker_connections",2],["1024",2],[";",2],["}",3],["http",5],["{",5],["include",6],["conf.d/*.conf",6],[";",6],["}",7]]
 ```
 
-## crossplane format
+### crossplane format
 
 This is a quick and dirty tool that uses [crossplane
 parse](#crossplane-parse) internally to format an NGINX config file.
@@ -449,7 +449,7 @@ optional arguments:
   -t, --tabs            indent with tabs instead of spaces
 ```
 
-## crossplane minify
+### crossplane minify
 
 This is a simple and fun little tool that uses [crossplane
 lex](#crossplane-lex) internally to remove as much whitespace from an
@@ -470,13 +470,13 @@ optional arguments:
   -o OUT, --out OUT  write output to a file
 ```
 
-# Python Module
+## Python Module
 
 In addition to the command line tool, you can import `crossplane` as a
 python module. There are two basic functions that the module will
 provide you: `parse` and `lex`.
 
-## crossplane.parse()
+### crossplane.parse()
 
 ```python
 import crossplane
@@ -487,7 +487,7 @@ This will return the same payload as described in the [crossplane
 parse](#crossplane-parse) section, except it will be Python dicts and
 not one giant JSON string.
 
-## crossplane.build()
+### crossplane.build()
 
 ```python
 import crossplane
@@ -506,7 +506,7 @@ config = crossplane.build(
 This will return a single string that contains an entire NGINX config
 file.
 
-## crossplane.lex()
+### crossplane.lex()
 
 ```python
 import crossplane
@@ -519,21 +519,21 @@ will result in a long list similar to what you can see in the
 is used, except it will obviously be a Python list of tuples and not one
 giant JSON string.
 
-# Other Languages
+## Other Languages
 
   - Ruby port by [@gdanko](https://github.com/gdanko):
     <https://github.com/gdanko/crossplane>
 
-# Contributing
+## Contributing
 
 Contributions are welcome, and they are greatly appreciated\! Every
 little bit helps, and credit will always be given.
 
 You can contribute in many ways:
 
-## Types of Contributions
+### Types of Contributions
 
-### Report Bugs
+#### Report Bugs
 
 Report bugs at <https://github.com/nginxinc/crossplane/issues>.
 
@@ -544,23 +544,23 @@ If you are reporting a bug, please include:
     troubleshooting.
   - Detailed steps to reproduce the bug.
 
-### Fix Bugs
+#### Fix Bugs
 
 Look through the GitHub issues for bugs. Anything tagged with "bug" is
 open to whoever wants to implement it.
 
-### Implement Features
+#### Implement Features
 
 Look through the GitHub issues for features. Anything tagged with
 "feature" is open to whoever wants to implement it.
 
-### Write Documentation
+#### Write Documentation
 
 crossplane could always use more documentation, whether as part of the
 official crossplane docs, in docstrings, or even on the web in blog
 posts, articles, and such.
 
-### Submit Feedback
+#### Submit Feedback
 
 The best way to send feedback is to file an issue at
 <https://github.com/nginxinc/crossplane/issues>.
@@ -573,7 +573,7 @@ If you are proposing a feature:
   - Remember that this is a volunteer-driven project, and that
     contributions are welcome :)
 
-## Get Started
+### Get Started
 
 Ready to contribute? Here's how to set up crossplane for local
 development.
@@ -606,7 +606,7 @@ development.
 
 6.  Submit a pull request through the GitHub website.
 
-## Pull Request Guidelines
+### Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
 
@@ -618,7 +618,7 @@ Before you submit a pull request, check that it meets these guidelines:
     tests pass for all supported Python versions.
 3.  Make sure to add yourself to the Contributors list in AUTHORS.rst :)
 
-## Tips
+### Tips
 
 To run a subset of tests:
 
