@@ -18,7 +18,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 
 def get_readme():
-    path = os.path.join(here, 'README.rst')
+    path = os.path.join(here, 'README.md')
     with io.open(path, encoding='utf-8') as f:
         return '\n' + f.read()
 
