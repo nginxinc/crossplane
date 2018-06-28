@@ -2,10 +2,13 @@
 import itertools
 import io
 
+from .compat import fix_pep_479
 from .errors import NgxParserSyntaxError
 
 EXTERNAL_LEXERS = {}
 
+
+@fix_pep_479
 def _iterescape(iterable):
     chars = iter(iterable)
     for char in chars:
@@ -23,6 +26,7 @@ def _iterlinecount(iterable):
         yield (char, line)
 
 
+@fix_pep_479
 def _lex_file_object(file_obj):
     """Generates token tuples from an nginx config file object"""
     token = ''  # the token buffer

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from crossplane.lexer import register_external_lexer
 from crossplane.builder import register_external_builder
+from crossplane.compat import fix_pep_479
 from crossplane.errors import NgxParserBaseException
 from crossplane.ext.abstract import CrossplaneExtension
 
@@ -32,6 +33,7 @@ class LuaBlockPlugin(CrossplaneExtension):
         register_external_lexer(directives=self.directives, lexer=self.lex)
         register_external_builder(directives=self.directives, builder=self.build)
 
+    @fix_pep_479
     def lex(self, token_iterator, directive):
         if directive == "set_by_lua_block":
             # https://github.com/openresty/lua-nginx-module#set_by_lua_block
