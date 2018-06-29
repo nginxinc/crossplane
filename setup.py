@@ -61,6 +61,7 @@ setup(
     version=__version__,
     description=__summary__,
     long_description=get_readme(),
+    long_description_content_type='text/markdown',
     author=__author__,
     author_email=__email__,
     url=__url__,
