@@ -1,8 +1,7 @@
-<p align="center">
-<a href="https://github.com/nginxinc/crossplane"><img src="https://raw.githubusercontent.com/nginxinc/crossplane/master/ext/crossplane.png" width="40%" height="40%"></a>
-</p>
+![Crossplane Logo](https://raw.githubusercontent.com/nginxinc/crossplane/master/ext/crossplane-logo.png)
 <h1 align="center">crossplane</h1>
 <h3 align="center">Reliable and fast NGINX configuration file parser and builder</h3>
+
 <p align="center">
 <a href="https://travis-ci.org/nginxinc/crossplane"><img src="https://img.shields.io/travis/nginxinc/crossplane/master.svg"></a>
 <a href="https://github.com/nginxinc/crossplane/releases"><img src="https://img.shields.io/github/release/nginxinc/crossplane.svg"></a>
@@ -18,9 +17,9 @@
       - [crossplane format](#crossplane-format)
       - [crossplane minify](#crossplane-minify)
   - [Python Module](#python-module)
-      - [crossplane.parse()](#crossplane.parse)
-      - [crossplane.build()](#crossplane.build)
-      - [crossplane.lex()](#crossplane.lex)
+      - [crossplane.parse()](#crossplaneparse)
+      - [crossplane.build()](#crossplanebuild)
+      - [crossplane.lex()](#crossplanelex)
   - [Other Languages](#other-languages)
   - [Contributing](#contributing)
       - [Types of Contributions](#types-of-contributions)
