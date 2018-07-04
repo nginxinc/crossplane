@@ -90,7 +90,7 @@ different servers, it's important to keep security in mind. For that
 reason, the `--ignore` option was added. It can be used to keep certain
 sensitive directives out of the payload output entirely.
 
-For example, we always the equivalent of this flag in the [NGINX Amplify
+For example, we always use the equivalent of this flag in the [NGINX Amplify
 Agent](https://github.com/nginxinc/nginx-amplify-agent/) out of respect
 for our users'
     privacy:
