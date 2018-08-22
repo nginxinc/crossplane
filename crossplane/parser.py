@@ -159,6 +159,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
                 # get names of all included files
                 if glob.has_magic(pattern):
                     fnames = glob.glob(pattern)
+                    fnames.sort()
                 else:
                     try:
                         # if the file pattern was explicit, nginx will check
