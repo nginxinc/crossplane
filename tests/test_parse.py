@@ -889,7 +889,6 @@ def test_combine_parsed_missing_values():
         ]
     }
     combined = crossplane.parser._combine_parsed_configs(separate)
-    import json; print(json.dumps(combined, indent=4))
     assert combined == {
         "status": "ok",
         "errors": [],
