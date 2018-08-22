@@ -9,7 +9,7 @@ def test_lex_lua_block_simple():
     dirname = os.path.join(tests_dir, 'configs', 'lua-block-simple')
     config = os.path.join(dirname, 'nginx.conf')
     tokens = crossplane.lex(config)
-    assert list(tokens) == [
+    assert list((token, line) for token, line, quoted in tokens) == [
         ('http', 1),
         ('{', 1),
         ('init_by_lua_block', 2),
@@ -75,7 +75,7 @@ def test_lex_lua_block_larger():
     dirname = os.path.join(tests_dir, 'configs', 'lua-block-larger')
     config = os.path.join(dirname, 'nginx.conf')
     tokens = crossplane.lex(config)
-    assert list(tokens) == [
+    assert list((token, line) for token, line, quoted in tokens) == [
         ('http', 1),
         ('{', 1),
         ('content_by_lua_block', 2),
@@ -126,7 +126,7 @@ def test_lex_lua_block_tricky():
     dirname = os.path.join(tests_dir, 'configs', 'lua-block-tricky')
     config = os.path.join(dirname, 'nginx.conf')
     tokens = crossplane.lex(config)
-    assert list(tokens) == [
+    assert list((token, line) for token, line, quoted in tokens) == [
         ('http', 1),
         ('{', 1),
         ('server', 2),
