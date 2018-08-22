@@ -72,15 +72,15 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
         parsed = []
 
         # parse recursively by pulling from a flat stream of tokens
-        for token, lineno in tokens:
+        for token, lineno, quoted in tokens:
             # we are parsing a block, so break if it's closing
-            if token == '}':
+            if token == '}' and not quoted:
                 break
 
             # if we are consuming, then just continue until end of context
             if consume:
                 # if we find a block inside this context, consume it too
-                if token == '{':
+                if token == '{' and not quoted:
                     _parse(parsing, tokens, consume=True)
                 continue
 
@@ -102,7 +102,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
                 }
 
             # if token is comment
-            if directive.startswith('#'):
+            if directive.startswith('#') and not quoted:
                 if comments:
                     stmt['directive'] = '#'
                     stmt['comment'] = token[1:]
@@ -113,15 +113,15 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
 
             # parse arguments by reading tokens
             args = stmt['args']
-            token, __ = next(tokens)  # disregard line numbers of args
-            while token not in ('{', ';', '}'):
+            token, __, quoted = next(tokens)  # disregard line numbers of args
+            while token not in ('{', ';', '}') or quoted:
                 stmt['args'].append(token)
-                token, __ = next(tokens)
+                token, __, quoted = next(tokens)
 
             # consume the directive if it is ignored and move on
             if stmt['directive'] in ignore:
                 # if this directive was a block consume it too
-                if token == '{':
+                if token == '{' and not quoted:
                     _parse(parsing, tokens, consume=True)
                 continue
 
@@ -138,7 +138,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
 
                     # if it was a block but shouldn't have been then consume
                     if e.strerror.endswith(' is not terminated by ";"'):
-                        if token != '}':
+                        if token != '}' and not quoted:
                             _parse(parsing, tokens, consume=True)
                         else:
                             break
@@ -184,7 +184,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
                     stmt['includes'].append(index)
 
             # if this statement terminated with '{' then it is a block
-            if token == '{':
+            if token == '{' and not quoted:
                 inner = enter_block_ctx(stmt, ctx)  # get context for block
                 stmt['block'] = _parse(parsing, tokens, ctx=inner)
 

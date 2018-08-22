@@ -28,7 +28,11 @@ def _iterlinecount(iterable):
 
 @fix_pep_479
 def _lex_file_object(file_obj):
-    """Generates token tuples from an nginx config file object"""
+    """
+    Generates token tuples from an nginx config file object
+
+    Yields 3-tuples like (token, lineno, quoted)
+    """
     token = ''  # the token buffer
     token_line = 0  # the line the token starts on
     next_token_is_directive = True
@@ -42,7 +46,7 @@ def _lex_file_object(file_obj):
         if char.isspace():
             # if token complete yield it and reset token buffer
             if token:
-                yield (token, token_line)
+                yield (token, token_line, False)
                 if next_token_is_directive and token in EXTERNAL_LEXERS:
                     for custom_lexer_token in EXTERNAL_LEXERS[token](it, token):
                         yield custom_lexer_token
@@ -60,7 +64,7 @@ def _lex_file_object(file_obj):
             while not char.endswith('\n'):
                 token = token + char
                 char, _ = next(it)
-            yield (token, line)
+            yield (token, line, False)
             token = ''
             continue
 
@@ -87,26 +91,28 @@ def _lex_file_object(file_obj):
                 token += quote if char == '\\' + quote else char
                 char, line = next(it)
 
-            yield (token, token_line)
+            yield (token, token_line, True)  # True because this is in quotes
+
+            # handle quoted external directives
             if next_token_is_directive and token in EXTERNAL_LEXERS:
                 for custom_lexer_token in EXTERNAL_LEXERS[token](it, token):
                     yield custom_lexer_token
                     next_token_is_directive = True
             else:
                 next_token_is_directive = False
-            token = ''
 
+            token = ''
             continue
 
         # handle special characters that are treated like full tokens
         if char in ('{', '}', ';'):
             # if token complete yield it and reset token buffer
             if token:
-                yield (token, token_line)
+                yield (token, token_line, False)
                 token = ''
 
             # this character is a full token so yield it now
-            yield (char, line)
+            yield (char, line, False)
             next_token_is_directive = True
             continue
 
@@ -118,10 +124,10 @@ def _balance_braces(tokens, filename=None):
     """Raises syntax errors if braces aren't balanced"""
     depth = 0
 
-    for token, line in tokens:
-        if token == '}':
+    for token, line, quoted in tokens:
+        if token == '}' and not quoted:
             depth -= 1
-        elif token == '{':
+        elif token == '{' and not quoted:
             depth += 1
 
         # raise error if we ever have more right braces than left
@@ -129,7 +135,7 @@ def _balance_braces(tokens, filename=None):
             reason = 'unexpected "}"'
             raise NgxParserSyntaxError(reason, filename, line)
         else:
-            yield token, line
+            yield (token, line, quoted)
 
     # raise error if we have less right braces than left at EOF
     if depth > 0:
@@ -142,8 +148,8 @@ def lex(filename):
     with io.open(filename, mode='r', encoding='utf-8') as f:
         it = _lex_file_object(f)
         it = _balance_braces(it, filename)
-        for token, line in it:
-            yield token, line
+        for token, line, quoted in it:
+            yield (token, line, quoted)
 
 
 def register_external_lexer(directives, lexer):

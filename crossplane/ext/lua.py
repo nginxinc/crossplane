@@ -34,18 +34,18 @@ class LuaBlockPlugin(CrossplaneExtension):
         register_external_builder(directives=self.directives, builder=self.build)
 
     @fix_pep_479
-    def lex(self, token_iterator, directive):
+    def lex(self, char_iterator, directive):
         if directive == "set_by_lua_block":
             # https://github.com/openresty/lua-nginx-module#set_by_lua_block
             # The sole *_by_lua_block directive that has an arg
             arg = ''
-            for char, line in token_iterator:
+            for char, line in char_iterator:
                 if char.isspace():
                     if arg:
-                        yield (arg, line)
+                        yield (arg, line, False)
                         break
                     while char.isspace():
-                        char, line = next(token_iterator)
+                        char, line = next(char_iterator)
 
                 arg += char
 
@@ -54,18 +54,19 @@ class LuaBlockPlugin(CrossplaneExtension):
 
         # check that Lua block starts correctly
         while True:
-            char, line = next(token_iterator)
+            char, line = next(char_iterator)
             if not char.isspace():
                 break
 
         if char != "{":
             reason = 'expected { to start Lua block'
             raise LuaBlockParserSyntaxError(reason, filename=None, lineno=line)
+
         depth += 1
 
         # Grab everything in Lua block as a single token
         # and watch for curly brace '{' in strings
-        for char, line in token_iterator:
+        for char, line in char_iterator:
             if char == '{':
                 depth += 1
             elif char == '}':
@@ -73,18 +74,18 @@ class LuaBlockPlugin(CrossplaneExtension):
             elif char in ('"', "'"):
                 quote = char
                 token += quote
-                char, line = next(token_iterator)
+                char, line = next(char_iterator)
                 while char != quote:
                     token += quote if char == quote else char
-                    char, line = next(token_iterator)
+                    char, line = next(char_iterator)
 
             if depth < 0:
                 reason = 'unxpected "}"'
                 raise LuaBlockParserSyntaxError(reason, filename=None, lineno=line)
 
             if depth == 0:
-                yield (token, line)
-                yield (';', line)
+                yield (token, line, True)  # True because this is treated like a string
+                yield (';', line, False)
                 raise StopIteration
             token += char
 

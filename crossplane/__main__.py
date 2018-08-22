@@ -108,8 +108,10 @@ def build(filename, dirname=None, force=False, indent=4, tabs=False,
 
 def lex(filename, out, indent=None, line_numbers=False):
     payload = list(lex_file(filename))
-    if not line_numbers:
-        payload = [token for token, lineno in payload]
+    if line_numbers:
+        payload = [(token, lineno) for token, lineno, quoted in payload]
+    else:
+        payload = [token for token, lineno, quoted in payload]
     _dump_payload(payload, out, indent=indent)
 
 
