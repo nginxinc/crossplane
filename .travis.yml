@@ -9,9 +9,6 @@ matrix:
           python: 2.7
         - dist: trusty
           sudo: false
-          python: 3.3
-        - dist: trusty
-          sudo: false
           python: 3.4
         - dist: trusty
           sudo: false
@@ -26,6 +23,5 @@ matrix:
           sudo: false
           python: pypy
 install:
-    - if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then pip install virtualenv==15.2.0; fi
     - pip install tox-travis
 script: tox
