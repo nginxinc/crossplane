@@ -252,3 +252,7 @@ def test_compare_parsed_and_built_empty_map_values(tmpdir):
 
 def test_compare_parsed_and_built_russian_text(tmpdir):
     compare_parsed_and_built('russian-text', 'nginx.conf', tmpdir)
+
+
+def test_compare_parsed_and_built_quoted_right_brace(tmpdir):
+    compare_parsed_and_built('quoted-right-brace', 'nginx.conf', tmpdir)
