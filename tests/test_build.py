@@ -170,6 +170,20 @@ def test_build_with_comments():
     ])
 
 
+def test_build_with_quoted_unicode():
+    payload = [
+        {
+            "directive": "env",
+            "line": 1,
+            "args": ["русский текст"],
+        }
+    ]
+
+    built = crossplane.build(payload, indent=4, tabs=False)
+
+    assert built == u"env 'русский текст';"
+
+
 def test_build_files_with_missing_status_and_errors(tmpdir):
     assert len(tmpdir.listdir()) == 0
     payload = {
@@ -207,7 +221,7 @@ def test_build_files_with_unicode(tmpdir):
                     {
                         "directive": "user",
                         "line": 1,
-                        "args": [u"\u6e2c\u8a66"],
+                        "args": ["測試"],
                     }
                 ]
             }
@@ -217,7 +231,7 @@ def test_build_files_with_unicode(tmpdir):
     built_files = tmpdir.listdir()
     assert len(built_files) == 1
     assert built_files[0].strpath == os.path.join(tmpdir.strpath, 'nginx.conf')
-    assert built_files[0].read_text('utf-8') == u'user \u6e2c\u8a66;\n'
+    assert built_files[0].read_text('utf-8') == u'user 測試;\n'
 
 
 def test_compare_parsed_and_built_simple(tmpdir):
@@ -234,3 +248,7 @@ def test_compare_parsed_and_built_messy_with_comments(tmpdir):
 
 def test_compare_parsed_and_built_empty_map_values(tmpdir):
     compare_parsed_and_built('empty-value-map', 'nginx.conf', tmpdir)
+
+
+def test_compare_parsed_and_built_russian_text(tmpdir):
+    compare_parsed_and_built('russian-text', 'nginx.conf', tmpdir)

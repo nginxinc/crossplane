@@ -33,7 +33,7 @@ def compare_parsed_and_built(conf_dirname, conf_basename, tmpdir, **kwargs):
 
     build1_config = build(original_parsed)
     build1_file = tmpdir.join('build1.conf')
-    build1_file.write(build1_config)
+    build1_file.write_text(build1_config, encoding='utf-8')
     build1_payload = parse(build1_file.strpath, **kwargs)
     build1_parsed = build1_payload['config'][0]['parsed']
 
@@ -41,7 +41,7 @@ def compare_parsed_and_built(conf_dirname, conf_basename, tmpdir, **kwargs):
 
     build2_config = build(build1_parsed)
     build2_file = tmpdir.join('build2.conf')
-    build2_file.write(build2_config)
+    build2_file.write_text(build2_config, encoding='utf-8')
     build2_payload = parse(build2_file.strpath, **kwargs)
     build2_parsed = build2_payload['config'][0]['parsed']
 

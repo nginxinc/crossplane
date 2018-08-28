@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-
 from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
 from traceback import format_exception
 
@@ -11,7 +10,7 @@ from .lexer import lex as lex_file
 from .parser import parse as parse_file
 from .builder import build as build_string, build_files, _enquote, DELIMITERS
 from .errors import NgxParserBaseException
-from .compat import PY2, json, input
+from .compat import json, input
 
 
 def _prompt_yes():
@@ -89,8 +88,6 @@ def build(filename, dirname=None, force=False, indent=4, tabs=False,
             parsed = config['parsed']
             output = build_string(parsed, indent=indent, tabs=tabs, header=header)
             output = output.rstrip() + '\n'
-            if PY2:
-                output = output.encode('utf-8')
             print('# ' + path + '\n' + output)
         return
 
