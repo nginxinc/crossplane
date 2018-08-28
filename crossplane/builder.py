@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 import codecs
 import os
+import re
+
+from .compat import PY2
 
 DELIMITERS = ('{', '}', ';')
 EXTERNAL_BUILDERS = {}
+ESCAPE_SEQUENCES_RE = re.compile(r'(\\x[0-9a-f]{2}|\\[0-7]{1,3})')
 
 
 def _escape(string):
@@ -49,10 +53,24 @@ def _needs_quotes(string):
     return char in ('\\', '$') or expanding
 
 
+def _replace_escape_sequences(match):
+    return match.group(1).decode('string-escape')
+
+
 def _enquote(arg):
-    if _needs_quotes(arg):
-        arg = repr(codecs.decode(arg, 'raw_unicode_escape'))
-        arg = arg.replace('\\\\', '\\').lstrip('u')
+    if not _needs_quotes(arg):
+        return arg
+
+    if PY2:
+        arg = codecs.encode(arg, 'utf-8') if isinstance(arg, unicode) else arg
+        arg = codecs.decode(arg, 'raw-unicode-escape')
+        arg = repr(arg).replace('\\\\', '\\').lstrip('u')
+        arg = ESCAPE_SEQUENCES_RE.sub(_replace_escape_sequences, arg)
+        arg = unicode(arg, 'utf-8')
+    else:
+        arg = codecs.decode(arg, 'unicode-internal')
+        arg = repr(arg).replace('\\\\', '\\')
+
     return arg
 
 
@@ -154,7 +172,7 @@ def build_files(payload, dirname=None, indent=4, tabs=False, header=False):
         parsed = config['parsed']
         output = build(parsed, indent=indent, tabs=tabs, header=header)
         output = output.rstrip() + '\n'
-        with codecs.open(path, 'w', encoding='utf-8') as fp:
+        with codecs.open(path, 'w') as fp:
             fp.write(output)
 
 
