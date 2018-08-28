@@ -29,8 +29,6 @@ def _escape(string):
 def _needs_quotes(string):
     if string == '':
         return True
-    elif string in DELIMITERS:
-        return False
 
     # lexer should throw an error when variable expansion syntax
     # is messed up, but just wrap it in quotes for now I guess
@@ -38,7 +36,7 @@ def _needs_quotes(string):
 
     # arguments can't start with variable expansion syntax
     char = next(chars)
-    if char.isspace() or char in ('{', ';', '"', "'", '${'):
+    if char.isspace() or char in ('{', '}', ';', '"', "'", '${'):
         return True
 
     expanding = False
