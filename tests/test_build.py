@@ -221,7 +221,7 @@ def test_build_files_with_unicode(tmpdir):
                     {
                         "directive": "user",
                         "line": 1,
-                        "args": ["測試"],
+                        "args": [u"測試"],
                     }
                 ]
             }

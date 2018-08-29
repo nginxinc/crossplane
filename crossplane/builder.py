@@ -170,7 +170,7 @@ def build_files(payload, dirname=None, indent=4, tabs=False, header=False):
         parsed = config['parsed']
         output = build(parsed, indent=indent, tabs=tabs, header=header)
         output = output.rstrip() + '\n'
-        with codecs.open(path, 'w') as fp:
+        with codecs.open(path, 'w', encoding='utf-8') as fp:
             fp.write(output)
 
 
