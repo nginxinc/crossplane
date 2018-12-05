@@ -96,10 +96,7 @@ def build(payload, indent=4, tabs=False, header=False):
         state['depth'] = state['depth'] + 1
 
         for obj in objs:
-            directive = obj['directive']
-
-            if directive == '':
-                directive = _enquote(directive)
+            directive = _enquote(obj['directive'])
 
             if directive in EXTERNAL_BUILDERS:
                 external_builder = EXTERNAL_BUILDERS[directive]

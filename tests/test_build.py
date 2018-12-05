@@ -256,3 +256,7 @@ def test_compare_parsed_and_built_russian_text(tmpdir):
 
 def test_compare_parsed_and_built_quoted_right_brace(tmpdir):
     compare_parsed_and_built('quoted-right-brace', 'nginx.conf', tmpdir)
+
+
+def test_compare_parsed_and_built_directive_with_space(tmpdir):
+    compare_parsed_and_built('directive-with-space', 'nginx.conf', tmpdir)
