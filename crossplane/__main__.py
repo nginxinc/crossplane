@@ -127,7 +127,7 @@ def format(filename, out, indent=None, tabs=False):
     payload = parse_file(filename)
     parsed = payload['config'][0]['parsed']
     if payload['status'] == 'ok':
-        output = build_file(parsed, indent, tabs) + '\n'
+        output = build_string(parsed, indent=indent, tabs=tabs) + '\n'
         out.write(output)
     else:
         e = payload['errors'][0]
