@@ -1902,7 +1902,9 @@ def enter_block_ctx(stmt, ctx):
     return ctx + (stmt['directive'],)
 
 
-def analyze(fname, stmt, term, ctx=(), strict=False):
+def analyze(fname, stmt, term, ctx=(), strict=False, check_ctx=True,
+        check_args=True):
+
     directive = stmt['directive']
     line = stmt['line']
 
@@ -1920,13 +1922,16 @@ def analyze(fname, stmt, term, ctx=(), strict=False):
     n_args = len(args)
 
     masks = DIRECTIVES[directive]
-    ctx_mask = CONTEXTS[ctx]
 
     # if this directive can't be used in this context then throw an error
-    masks = [mask for mask in masks if mask & ctx_mask]
-    if not masks:
-        reason = '"%s" directive is not allowed here' % directive
-        raise NgxParserDirectiveContextError(reason, fname, line)
+    if check_ctx:
+        masks = [mask for mask in masks if mask & CONTEXTS[ctx]]
+        if not masks:
+            reason = '"%s" directive is not allowed here' % directive
+            raise NgxParserDirectiveContextError(reason, fname, line)
+
+    if not check_args:
+        return
 
     valid_flag = lambda x: x.lower() in ('on', 'off')
 

@@ -23,10 +23,11 @@ def _prepare_if_args(stmt):
 
 
 def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
-        comments=False, strict=False, combine=False):
+        comments=False, strict=False, combine=False, check_ctx=True,
+        check_args=True):
     """
     Parses an nginx config file and returns a nested dict payload
-    
+
     :param filename: string contianing the name of the config file to parse
     :param onerror: function that determines what's saved in "callback"
     :param catch_errors: bool; if False, parse stops after first error
@@ -35,6 +36,8 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
     :param single: bool; if True, including from other files doesn't happen
     :param comments: bool; if True, including comments to json payload
     :param strict: bool; if True, unrecognized directives raise errors
+    :param check_ctx: bool; if True, runs context analysis on directives
+    :param check_args: bool; if True, runs arg count analysis on directives
     :returns: a payload that describes the parsed nginx config
     """
     config_dir = os.path.dirname(filename)
@@ -131,7 +134,10 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
 
             try:
                 # raise errors if this statement is invalid
-                analyze(fname, stmt, token, ctx, strict=strict)
+                analyze(
+                    fname=fname, stmt=stmt, term=token, ctx=ctx, strict=strict,
+                    check_ctx=check_ctx, check_args=check_args
+                )
             except NgxParserDirectiveError as e:
                 if catch_errors:
                     _handle_error(parsing, e)
