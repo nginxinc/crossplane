@@ -9,7 +9,7 @@ from . import __version__
 from .lexer import lex as lex_file
 from .parser import parse as parse_file
 from .builder import build as build_string, build_files, _enquote, DELIMITERS
-from .errors import NgxParserBaseException
+from .formatter import format as format_file
 from .compat import json, input
 
 
@@ -123,15 +123,9 @@ def minify(filename, out):
     out.write('\n')
 
 
-def format(filename, out, indent=None, tabs=False):
-    payload = parse_file(filename)
-    parsed = payload['config'][0]['parsed']
-    if payload['status'] == 'ok':
-        output = build_string(parsed, indent=indent, tabs=tabs) + '\n'
-        out.write(output)
-    else:
-        e = payload['errors'][0]
-        raise NgxParserBaseException(e['error'], e['file'], e['line'])
+def format(filename, out, indent=4, tabs=False):
+    output = format_file(filename, indent=indent, tabs=tabs)
+    out.write(output + '\n')
 
 
 class _SubparserHelpFormatter(RawDescriptionHelpFormatter):

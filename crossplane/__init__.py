@@ -2,9 +2,10 @@
 from .parser import parse
 from .lexer import lex
 from .builder import build
+from .formatter import format
 from .ext.lua import LuaBlockPlugin
 
-__all__ = ['parse', 'lex', 'build']
+__all__ = ['parse', 'lex', 'build', 'format']
 
 __title__ = 'crossplane'
 __summary__ = 'Reliable and fast NGINX configuration file parser.'
