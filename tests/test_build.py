@@ -48,9 +48,7 @@ def test_build_nested_and_multiple_args():
             ]
         }
     ]
-
     built = crossplane.build(payload, indent=4, tabs=False)
-
     assert built == '\n'.join([
         'events {',
         '    worker_connections 1024;',
@@ -148,9 +146,7 @@ def test_build_with_comments():
             ]
         }
     ]
-
     built = crossplane.build(payload, indent=4, tabs=False)
-
     assert built == '\n'.join([
         'events {',
         '    worker_connections 1024;',
@@ -170,6 +166,24 @@ def test_build_with_comments():
     ])
 
 
+def test_build_starts_with_comments():
+    payload = [
+        {
+            "directive": "#",
+            "line": 1,
+            "args": [],
+            "comment": " foo"
+        },
+        {
+            "directive": "user",
+            "line": 5,
+            "args": ["root"]
+        }
+    ]
+    built = crossplane.build(payload, indent=4, tabs=False)
+    assert built == '# foo\nuser root;'
+
+
 def test_build_with_quoted_unicode():
     payload = [
         {
@@ -178,9 +192,7 @@ def test_build_with_quoted_unicode():
             "args": ["русский текст"],
         }
     ]
-
     built = crossplane.build(payload, indent=4, tabs=False)
-
     assert built == u"env 'русский текст';"
 
 

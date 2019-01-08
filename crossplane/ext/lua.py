@@ -92,7 +92,7 @@ class LuaBlockPlugin(CrossplaneExtension):
     def parse(self, stmt, parsing, tokens, ctx=(), consume=False):
         pass
 
-    def build(self, stmt, padding, state, indent=4, tabs=False):
+    def build(self, stmt, padding, indent=4, tabs=False):
         built = stmt['directive']
         if built == 'set_by_lua_block':
             block = stmt['args'][1]
