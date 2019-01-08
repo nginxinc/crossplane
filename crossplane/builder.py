@@ -74,75 +74,54 @@ def _enquote(arg):
 
 def build(payload, indent=4, tabs=False, header=False):
     padding = '\t' if tabs else ' ' * indent
-    state = {
-        'prev_obj': None,
-        'depth': -1
-    }
 
-    def _put_line(line, obj):
-        margin = padding * state['depth']
-
-        # don't need put \n on first line and after comment
-        if state['prev_obj'] is None:
-            return margin + line
-
-        # trailing comments have to be without \n
-        if obj['directive'] == '#' and obj['line'] == state['prev_obj']['line']:
-            return ' ' + line
-
-        return '\n' + margin + line
-
-    def _build_lines(objs):
-        state['depth'] = state['depth'] + 1
-
-        for obj in objs:
-            directive = _enquote(obj['directive'])
-
-            if directive in EXTERNAL_BUILDERS:
-                external_builder = EXTERNAL_BUILDERS[directive]
-                built = external_builder(obj, padding, state, indent, tabs)
-                yield _put_line(built, obj)
-                continue
-
-            if directive == '#':
-                yield _put_line('#' + obj['comment'], obj)
-                continue
-
-            args = [_enquote(arg) for arg in obj['args']]
-
-            if directive == 'if':
-                line = 'if (' + ' '.join(args) + ')'
-            elif args:
-                line = directive + ' ' + ' '.join(args)
-            else:
-                line = directive
-
-            if obj.get('block') is None:
-                yield _put_line(line + ';', obj)
-            else:
-                yield _put_line(line + ' {', obj)
-
-                # set prev_obj to propper indentation in block
-                state['prev_obj'] = obj
-                for line in _build_lines(obj['block']):
-                    yield line
-                yield _put_line('}', obj)
-
-            state['prev_obj'] = obj
-        state['depth'] = state['depth'] - 1
-
+    head = ''
     if header:
-        lines = [
-            '# This config was built from JSON using NGINX crossplane.\n',
-            '# If you encounter any bugs please report them here:\n',
-            '# https://github.com/nginxinc/crossplane/issues\n',
-            '\n'
-        ]
-    else:
-        lines = []
+        head += '# This config was built from JSON using NGINX crossplane.\n'
+        head += '# If you encounter any bugs please report them here:\n'
+        head += '# https://github.com/nginxinc/crossplane/issues\n'
+        head += '\n'
 
-    lines += _build_lines(payload)
-    return ''.join(lines)
+    def _build_block(output, block, depth, last_line):
+        margin = padding * depth
+
+        for stmt in block:
+            directive = _enquote(stmt['directive'])
+            line = stmt.get('line', 0)
+
+            if directive == '#' and line == last_line:
+                output += ' #' + stmt['comment']
+                continue
+            elif directive == '#':
+                built = '#' + stmt['comment']
+            elif directive in EXTERNAL_BUILDERS:
+                external_builder = EXTERNAL_BUILDERS[directive]
+                built = external_builder(stmt, padding, indent, tabs)
+            else:
+                args = [_enquote(arg) for arg in stmt['args']]
+
+                if directive == 'if':
+                    built = 'if (' + ' '.join(args) + ')'
+                elif args:
+                    built = directive + ' ' + ' '.join(args)
+                else:
+                    built = directive
+
+                if stmt.get('block') is None:
+                    built += ';'
+                else:
+                    built += ' {'
+                    built = _build_block(built, stmt['block'], depth+1, line)
+                    built += '\n' + margin + '}'
+
+            output += ('\n' if output else '') + margin + built
+            last_line = line
+
+        return output
+
+    body = ''
+    body = _build_block(body, payload, 0, 0)
+    return head + body
 
 
 def build_files(payload, dirname=None, indent=4, tabs=False, header=False):
