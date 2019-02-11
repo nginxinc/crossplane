@@ -428,10 +428,10 @@ like:
 
 This is a quick and dirty tool that uses [crossplane
 parse](#crossplane-parse) internally to format an NGINX config file.
-Currently it removes all blank lines and comments, but this may get
-improved more in the future if there's demand for it. As of now, it
-serves the purpose of demonstrating what you can do with `crossplane`'s
-parsing abilities.
+It serves the purpose of demonstrating what you can do with `crossplane`'s
+parsing abilities. It is not meant to be a fully fleshed out, feature-rich
+formatting tool. If that is what you are looking for, then you may want to
+look writing your own using crossplane's Python API.
 
 ```
 usage: crossplane format [-h] [-o OUT] [-i NUM | -t] filename
