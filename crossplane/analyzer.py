@@ -386,6 +386,9 @@ DIRECTIVES = {
     'fastcgi_send_timeout': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
     ],
+    'fastcgi_socket_keepalive': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
+    ],
     'fastcgi_split_path_info': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
     ],
@@ -428,6 +431,87 @@ DIRECTIVES = {
     ],
     'google_perftools_profiles': [
         NGX_MAIN_CONF | NGX_DIRECT_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_bind': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE12
+    ],
+    'grpc_buffer_size': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_connect_timeout': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_hide_header': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_ignore_headers': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_1MORE
+    ],
+    'grpc_intercept_errors': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
+    ],
+    'grpc_next_upstream': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_1MORE
+    ],
+    'grpc_next_upstream_timeout': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_next_upstream_tries': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_pass': [
+        NGX_HTTP_LOC_CONF | NGX_HTTP_LIF_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_pass_header': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_read_timeout': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_send_timeout': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_set_header': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE2
+    ],
+    'grpc_socket_keepalive': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
+    ],
+    'grpc_ssl_certificate': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_ssl_certificate_key': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_ssl_ciphers': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_ssl_crl': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_ssl_name': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_ssl_password_file': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_ssl_protocols': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_1MORE
+    ],
+    'grpc_ssl_server_name': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
+    ],
+    'grpc_ssl_session_reuse': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
+    ],
+    'grpc_ssl_trusted_certificate': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'grpc_ssl_verify': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
+    ],
+    'grpc_ssl_verify_depth': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
     ],
     'gunzip': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
@@ -481,6 +565,9 @@ DIRECTIVES = {
     'http2_idle_timeout': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_CONF_TAKE1
     ],
+    'http2_max_concurrent_pushes': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_CONF_TAKE1
+    ],
     'http2_max_concurrent_streams': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_CONF_TAKE1
     ],
@@ -492,6 +579,12 @@ DIRECTIVES = {
     ],
     'http2_max_requests': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'http2_push': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'http2_push_preload': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
     ],
     'http2_recv_buffer_size': [
         NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1
@@ -557,10 +650,12 @@ DIRECTIVES = {
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE12
     ],
     'keepalive_requests': [
-        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+        NGX_HTTP_UPS_CONF | NGX_CONF_TAKE1
     ],
     'keepalive_timeout': [
-        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE12
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE12,
+        NGX_HTTP_UPS_CONF | NGX_CONF_TAKE1
     ],
     'large_client_header_buffers': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_CONF_TAKE2
@@ -688,6 +783,9 @@ DIRECTIVES = {
     ],
     'memcached_send_timeout': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'memcached_socket_keepalive': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
     ],
     'merge_slashes': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_CONF_FLAG
@@ -943,6 +1041,9 @@ DIRECTIVES = {
     'proxy_request_buffering': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
     ],
+    'proxy_requests': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
     'proxy_responses': [
         NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
     ],
@@ -957,6 +1058,10 @@ DIRECTIVES = {
     ],
     'proxy_set_header': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE2
+    ],
+    'proxy_socket_keepalive': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG,
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_FLAG
     ],
     'proxy_ssl': [
         NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_FLAG
@@ -1027,6 +1132,10 @@ DIRECTIVES = {
     ],
     'proxy_upload_rate': [
         NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'random': [
+        NGX_HTTP_UPS_CONF | NGX_CONF_NOARGS | NGX_CONF_TAKE12,
+        NGX_STREAM_UPS_CONF | NGX_CONF_NOARGS | NGX_CONF_TAKE12
     ],
     'random_index': [
         NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
@@ -1198,6 +1307,9 @@ DIRECTIVES = {
     'scgi_send_timeout': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
     ],
+    'scgi_socket_keepalive': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
+    ],
     'scgi_store': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
     ],
@@ -1270,6 +1382,12 @@ DIRECTIVES = {
     'smtp_capabilities': [
         NGX_MAIL_MAIN_CONF | NGX_MAIL_SRV_CONF | NGX_CONF_1MORE
     ],
+    'smtp_client_buffer': [
+        NGX_MAIL_MAIN_CONF | NGX_MAIL_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'smtp_greeting_delay': [
+        NGX_MAIL_MAIN_CONF | NGX_MAIL_SRV_CONF | NGX_CONF_TAKE1
+    ],
     'source_charset': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_HTTP_LIF_CONF | NGX_CONF_TAKE1
     ],
@@ -1337,6 +1455,9 @@ DIRECTIVES = {
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_CONF_TAKE1,
         NGX_MAIL_MAIN_CONF | NGX_MAIL_SRV_CONF | NGX_CONF_TAKE1,
         NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'ssl_early_data': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_CONF_FLAG
     ],
     'ssl_ecdh_curve': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_CONF_TAKE1,
@@ -1434,6 +1555,9 @@ DIRECTIVES = {
     ],
     'sub_filter_types': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_1MORE
+    ],
+    'subrequest_output_buffer_size': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
     ],
     'tcp_nodelay': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG,
@@ -1626,6 +1750,9 @@ DIRECTIVES = {
     'uwsgi_send_timeout': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
     ],
+    'uwsgi_socket_keepalive': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_FLAG
+    ],
     'uwsgi_ssl_certificate': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
     ],
@@ -1739,16 +1866,25 @@ DIRECTIVES = {
     ],
 
     # nginx+ directives [definitions inferred from docs]
+    'api': [
+        NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS | NGX_CONF_TAKE1
+    ],
     'auth_jwt': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE12
     ],
     'auth_jwt_claim_set': [
-        NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE2
+        NGX_HTTP_MAIN_CONF | NGX_CONF_2MORE
     ],
     'auth_jwt_header_set': [
-        NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE2
+        NGX_HTTP_MAIN_CONF | NGX_CONF_2MORE
     ],
     'auth_jwt_key_file': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'auth_jwt_key_request': [
+        NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
+    ],
+    'auth_jwt_leeway': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
     ],
     'f4f': [
@@ -1798,12 +1934,23 @@ DIRECTIVES = {
         NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
         NGX_STREAM_MAIN_CONF | NGX_CONF_TAKE1
     ],
+    'js_path': [
+        NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1
+    ],
     'js_preread': [
         NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
     ],
     'js_set': [
         NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE2,
         NGX_STREAM_MAIN_CONF | NGX_CONF_TAKE2
+    ],
+    'keyval': [
+        NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE3,
+        NGX_STREAM_MAIN_CONF | NGX_CONF_TAKE3,
+    ],
+    'keyval_zone': [
+        NGX_HTTP_MAIN_CONF | NGX_CONF_1MORE,
+        NGX_STREAM_MAIN_CONF | NGX_CONF_1MORE,
     ],
     'least_time': [
         NGX_HTTP_UPS_CONF | NGX_CONF_TAKE12,
@@ -1871,6 +2018,66 @@ DIRECTIVES = {
     ],
     'uwsgi_cache_purge': [
         NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_1MORE
+    ],
+    'zone_sync': [
+        NGX_STREAM_SRV_CONF | NGX_CONF_NOARGS
+    ],
+    'zone_sync_buffers': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE2
+    ],
+    'zone_sync_connect_retry_interval': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_connect_timeout': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_interval': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_recv_buffer_size': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_server': [
+        NGX_STREAM_SRV_CONF | NGX_CONF_TAKE12
+    ],
+    'zone_sync_ssl': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_FLAG
+    ],
+    'zone_sync_ssl_certificate': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_ssl_certificate_key': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_ssl_ciphers': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_ssl_crl': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_ssl_name': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_ssl_password_file': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_ssl_protocols': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_1MORE
+    ],
+    'zone_sync_ssl_server_name': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_FLAG
+    ],
+    'zone_sync_ssl_trusted_certificate': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_ssl_verify': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_FLAG
+    ],
+    'zone_sync_ssl_verify_depth': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+    ],
+    'zone_sync_timeout': [
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
     ]
 }
 
