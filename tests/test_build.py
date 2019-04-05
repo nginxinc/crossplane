@@ -196,6 +196,37 @@ def test_build_with_quoted_unicode():
     assert built == u"env 'русский текст';"
 
 
+def test_build_multiple_comments_on_one_line():
+    payload = [
+        {
+            "directive": "#",
+            "line": 1,
+            "args": [],
+            "comment": "comment1"
+        },
+        {
+            "directive": "user",
+            "line": 2,
+            "args": ["root"]
+        },
+        {
+            "directive": "#",
+            "line": 2,
+            "args": [],
+            "comment": "comment2"
+        },
+        {
+            "directive": "#",
+            "line": 2,
+            "args": [],
+            "comment": "comment3"
+        }
+    ]
+    built = crossplane.build(payload, indent=4, tabs=False)
+    assert built == '#comment1\nuser root; #comment2 #comment3'
+
+
+
 def test_build_files_with_missing_status_and_errors(tmpdir):
     assert len(tmpdir.listdir()) == 0
     payload = {

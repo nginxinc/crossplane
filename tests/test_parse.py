@@ -582,7 +582,7 @@ def test_config_with_comments():
                 }
              ],
              "status" : "ok",
-             "file" : os.path.join(dirname, 'nginx.conf')
+             "file" : config
           }
        ]
     }
@@ -909,6 +909,67 @@ def test_combine_parsed_missing_values():
                         "line": 2,
                         "args": [],
                         "block": []
+                    }
+                ]
+            }
+        ]
+    }
+
+
+def test_comments_between_args():
+    dirname = os.path.join(here, 'configs', 'comments-between-args')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(config, comments=True)
+    assert payload == {
+        'status': 'ok',
+        'errors': [],
+        'config': [
+            {
+                'file': config,
+                'status': 'ok',
+                'errors': [],
+                'parsed': [
+                    {
+                        'directive': 'http',
+                        'line': 1,
+                        'args': [],
+                        'block': [
+                            {
+                                'directive': '#',
+                                'line': 1,
+                                'args': [],
+                                'comment': 'comment 1'
+                            },
+                            {
+                                'directive': 'log_format',
+                                'line': 2,
+                                'args': ['\\#arg\\ 1', '#arg 2']
+                            },
+                            {
+                                'directive': '#',
+                                'line': 2,
+                                'args': [],
+                                'comment': 'comment 2'
+                            },
+                            {
+                                'directive': '#',
+                                'line': 2,
+                                'args': [],
+                                'comment': 'comment 3'
+                            },
+                            {
+                                'directive': '#',
+                                'line': 2,
+                                'args': [],
+                                'comment': 'comment 4'
+                            },
+                            {
+                                'directive': '#',
+                                'line': 2,
+                                'args': [],
+                                'comment': 'comment 5'
+                            }
+                        ]
                     }
                 ]
             }

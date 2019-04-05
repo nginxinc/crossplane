@@ -76,6 +76,8 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
 
         # parse recursively by pulling from a flat stream of tokens
         for token, lineno, quoted in tokens:
+            comments_in_args = []
+
             # we are parsing a block, so break if it's closing
             if token == '}' and not quoted:
                 break
@@ -118,7 +120,11 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
             args = stmt['args']
             token, __, quoted = next(tokens)  # disregard line numbers of args
             while token not in ('{', ';', '}') or quoted:
-                stmt['args'].append(token)
+                if token.startswith('#') and not quoted:
+                    comments_in_args.append(token[1:])
+                else:
+                    stmt['args'].append(token)
+
                 token, __, quoted = next(tokens)
 
             # consume the directive if it is ignored and move on
@@ -195,6 +201,16 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
                 stmt['block'] = _parse(parsing, tokens, ctx=inner)
 
             parsed.append(stmt)
+
+            # add all comments found inside args after stmt is added
+            for comment in comments_in_args:
+                comment_stmt = {
+                    'directive': '#',
+                    'line': stmt['line'],
+                    'args': [],
+                    'comment': comment
+                }
+                parsed.append(comment_stmt)
 
         return parsed
 
