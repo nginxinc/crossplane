@@ -11,10 +11,12 @@ def test_format_messy_config():
     output = crossplane.format(config)
     assert output == '\n'.join([
         'user nobody;',
+        r'# hello\n\\n\\\n worlddd  \#\\#\\\# dfsf\n \\n \\\n ',
         'events {',
         '    worker_connections 2048;',
         '}',
-        'http {',
+        'http { #forteen',
+        '    # this is a comment',
         '    access_log off;',
         '    default_type text/plain;',
         '    error_log off;',
@@ -33,7 +35,7 @@ def test_format_messy_config():
         '        location /bar {',
         '        }',
         '        location /\{\;\}\ #\ ab {',
-        '        }',
+        '        } # hello',
         '        if ($request_method = P\{O\)\###\;ST) {',
         '        }',
         '        location /status.html {',
@@ -73,5 +75,27 @@ def test_format_args_not_analyzed():
         'events {',
         '}',
         'http {',
+        '}'
+    ])
+
+
+def test_format_with_comments():
+    dirname = os.path.join(here, 'configs', 'with-comments')
+    config = os.path.join(dirname, 'nginx.conf')
+    output = crossplane.format(config)
+    assert output == '\n'.join([
+        'events {',
+        '    worker_connections 1024;',
+        '}',
+        '#comment',
+        'http {',
+        '    server {',
+        '        listen 127.0.0.1:8080; #listen',
+        '        server_name default_server;',
+        '        location / { ## this is brace',
+        '            # location /',
+        "            return 200 'foo bar baz';",
+        '        }',
+        '    }',
         '}'
     ])

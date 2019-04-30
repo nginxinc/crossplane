@@ -5,7 +5,13 @@ from .parser import parse
 
 
 def format(filename, indent=4, tabs=False):
-    payload = parse(filename, single=True, check_ctx=False, check_args=False)
+    payload = parse(
+        filename,
+        comments=True,
+        single=True,
+        check_ctx=False,
+        check_args=False
+    )
 
     if payload['status'] != 'ok':
         e = payload['errors'][0]
