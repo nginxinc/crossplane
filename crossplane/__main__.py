@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import io
 import os
 import sys
-from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from traceback import format_exception
 
 from . import __version__
@@ -24,7 +25,7 @@ def _dump_payload(obj, fp, indent):
     kwargs = {'indent': indent}
     if indent is None:
         kwargs['separators'] = ',', ':'
-    fp.write(json.dumps(obj, **kwargs) + '\n')
+    fp.write(json.dumps(obj, **kwargs) + u'\n')
 
 
 def parse(filename, out, indent=None, catch=None, tb_onerror=None, ignore='',
@@ -49,7 +50,11 @@ def parse(filename, out, indent=None, catch=None, tb_onerror=None, ignore='',
         kwargs['onerror'] = callback
 
     payload = parse_file(filename, **kwargs)
-    _dump_payload(payload, out, indent=indent)
+    o = sys.stdout if out is None else io.open(out, 'w', encoding='utf-8')
+    try:
+        _dump_payload(payload, o, indent=indent)
+    finally:
+        o.close()
 
 
 def build(filename, dirname=None, force=False, indent=4, tabs=False,
@@ -109,23 +114,51 @@ def lex(filename, out, indent=None, line_numbers=False):
         payload = [(token, lineno) for token, lineno, quoted in payload]
     else:
         payload = [token for token, lineno, quoted in payload]
-    _dump_payload(payload, out, indent=indent)
+    o = sys.stdout if out is None else io.open(out, 'w', encoding='utf-8')
+    try:
+        _dump_payload(payload, o, indent=indent)
+    finally:
+        o.close()
 
 
 def minify(filename, out):
-    prev, token = '', ''
-    for token, __ in lex_file(filename):
-        token = _enquote(token)
-        if prev and not (prev in DELIMITERS or token in DELIMITERS):
-            token = ' ' + token
-        out.write(token)
-        prev = token
-    out.write('\n')
+    payload = parse_file(
+        filename,
+        single=True,
+        catch_errors=False,
+        check_args=False,
+        check_ctx=False,
+        comments=False,
+        strict=False
+    )
+    o = sys.stdout if out is None else io.open(out, 'w', encoding='utf-8')
+    def write_block(block):
+        for stmt in block:
+            o.write(_enquote(stmt['directive']))
+            if stmt['directive'] == 'if':
+                o.write(u' (%s)' % ' '.join(map(_enquote, stmt['args'])))
+            else:
+                o.write(u' %s' % ' '.join(map(_enquote, stmt['args'])))
+            if 'block' in stmt:
+                o.write(u'{')
+                write_block(stmt['block'])
+                o.write(u'}')
+            else:
+                o.write(u';')
+    try:
+        write_block(payload['config'][0]['parsed'])
+        o.write(u'\n')
+    finally:
+        o.close()
 
 
 def format(filename, out, indent=4, tabs=False):
     output = format_file(filename, indent=indent, tabs=tabs)
-    out.write(output + '\n')
+    o = sys.stdout if out is None else io.open(out, 'w', encoding='utf-8')
+    try:
+        o.write(output + u'\n')
+    finally:
+        o.close()
 
 
 class _SubparserHelpFormatter(RawDescriptionHelpFormatter):
@@ -160,7 +193,7 @@ def parse_args(args=None):
 
     p = create_subparser(parse, 'parses a json payload for an nginx config')
     p.add_argument('filename', help='the nginx config file')
-    p.add_argument('-o', '--out', type=FileType('w'), default='-', help='write output to a file')
+    p.add_argument('-o', '--out', type=str, help='write output to a file')
     p.add_argument('-i', '--indent', type=int, metavar='NUM', help='number of spaces to indent output')
     p.add_argument('--ignore', metavar='DIRECTIVES', default='', help='ignore directives (comma-separated)')
     p.add_argument('--no-catch', action='store_false', dest='catch', help='only collect first error in file')
@@ -183,17 +216,17 @@ def parse_args(args=None):
 
     p = create_subparser(lex, 'lexes tokens from an nginx config file')
     p.add_argument('filename', help='the nginx config file')
-    p.add_argument('-o', '--out', type=FileType('w'), default='-', help='write output to a file')
+    p.add_argument('-o', '--out', type=str, help='write output to a file')
     p.add_argument('-i', '--indent', type=int, metavar='NUM', help='number of spaces to indent output')
     p.add_argument('-n', '--line-numbers', action='store_true', help='include line numbers in json payload')
 
     p = create_subparser(minify, 'removes all whitespace from an nginx config')
     p.add_argument('filename', help='the nginx config file')
-    p.add_argument('-o', '--out', type=FileType('w'), default='-', help='write output to a file')
+    p.add_argument('-o', '--out', type=str, help='write output to a file')
 
     p = create_subparser(format, 'formats an nginx config file')
     p.add_argument('filename', help='the nginx config file')
-    p.add_argument('-o', '--out', type=FileType('w'), default='-', help='write output to a file')
+    p.add_argument('-o', '--out', type=str, help='write output to a file')
     g = p.add_mutually_exclusive_group()
     g.add_argument('-i', '--indent', type=int, metavar='NUM', help='number of spaces to indent output', default=4)
     g.add_argument('-t', '--tabs', action='store_true', help='indent with tabs instead of spaces')
