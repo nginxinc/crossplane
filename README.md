@@ -39,9 +39,11 @@ various operations for nginx config files
 
 optional arguments:
   -h, --help            show this help message and exit
+  -V, --version         show program's version number and exit
 
 commands:
   parse                 parses a json payload for an nginx config
+  build                 builds an nginx config from a json payload
   lex                   lexes tokens from an nginx config file
   minify                removes all whitespace from an nginx config
   format                formats an nginx config file
