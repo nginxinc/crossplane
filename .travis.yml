@@ -1,8 +1,8 @@
 language: python
-dist: trusty
 matrix:
   include:
     - python: 2.6
+      dist: trusty
     - python: 2.7
     - python: 3.4
     - python: 3.5
