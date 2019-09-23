@@ -2005,7 +2005,8 @@ DIRECTIVES = {
     ],
     'status_zone': [
         NGX_HTTP_SRV_CONF | NGX_CONF_TAKE1,
-        NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1
+        NGX_STREAM_SRV_CONF | NGX_CONF_TAKE1,
+        NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1
     ],
     'sticky': [
         NGX_HTTP_UPS_CONF | NGX_CONF_1MORE
