@@ -1,4 +1,5 @@
 language: python
+dist: trusty
 matrix:
   include:
     - python: 2.6
@@ -7,7 +8,6 @@ matrix:
     - python: 3.5
     - python: 3.6
     - python: 3.7
-      dist: trusty
       sudo: true
     - python: pypy
 install:
