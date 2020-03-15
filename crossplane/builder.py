@@ -66,7 +66,6 @@ def _enquote(arg):
         arg = ESCAPE_SEQUENCES_RE.sub(_replace_escape_sequences, arg)
         arg = unicode(arg, 'utf-8')
     else:
-        arg = codecs.decode(arg, 'unicode-internal')
         arg = repr(arg).replace('\\\\', '\\')
 
     return arg
