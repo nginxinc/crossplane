@@ -61,7 +61,7 @@ def test_lex_lua_block_simple():
         ('127.0.0.1', 32),
         (';', 32),
         ('balancer_by_lua_block', 33),
-        ('\n            -- use Lua to do something interesting here\n        ', 35),
+        ('\n            -- use Lua that\'ll do something interesting here\n        ', 35),
         (';', 35),
         ('log_by_lua_block', 36),
         ('\n            print("I need no extra escaping here, for example: \\r\\nblah")\n        ', 38),
@@ -277,7 +277,7 @@ def test_parse_lua_block_simple():
                                     {
                                         'line': 33,
                                         'args': [
-                                            '\n            -- use Lua to do something interesting here'
+                                            '\n            -- use Lua that\'ll do something interesting here'
                                             '\n        '
                                         ],
                                         'directive': 'balancer_by_lua_block'

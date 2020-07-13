@@ -6,6 +6,25 @@ from crossplane.errors import NgxParserBaseException
 from crossplane.ext.abstract import CrossplaneExtension
 
 
+class EmplaceIter:
+    def __init__(self, it):
+        self.it = it
+        self.ret = []
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if len(self.ret) > 0:
+            v = self.ret.pop()
+            return v
+        return next(self.it)
+
+    def put_back(self, v):
+        self.ret.append(v)
+
+
+
 class LuaBlockPlugin(CrossplaneExtension):
     """
     This plugin adds special handling for Lua code block directives (*_by_lua_block)
@@ -64,10 +83,23 @@ class LuaBlockPlugin(CrossplaneExtension):
 
         depth += 1
 
+        char_iterator = EmplaceIter(char_iterator)
+
         # Grab everything in Lua block as a single token
         # and watch for curly brace '{' in strings
         for char, line in char_iterator:
-            if char == '{':
+            if char == '-':
+                prev_char, prev_line = char, line
+                char, comment_line = next(char_iterator)
+                if char == '-':
+                    token += '-'
+                    while char != '\n':
+                        token += char
+                        char, line = next(char_iterator)
+                else:
+                    char_iterator.put_back((char, comment_line))
+                    char, line = prev_char, prev_line
+            elif char == '{':
                 depth += 1
             elif char == '}':
                 depth -= 1

@@ -14,3 +14,4 @@ Contributors
 * Ivan Poluyanov <i.poluyanov@icloud.com> `@poluyanov <https://github.com/poluyanov>`_
 * Raymond Lau <raymond.lau.ca@gmail.com> `@Raymond26 <https://github.com/Raymond26>`_
 * Luca Comellini <luca.com@gmail.com> `@lucacome <https://github.com/lucacome>`_
+* Ron Vider <viderron@gmail.com> `@RonVider <https://github.com/RonVider>`_
