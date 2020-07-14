@@ -20,6 +20,8 @@ class EmplaceIter:
             return v
         return next(self.it)
 
+    next = __next__
+
     def put_back(self, v):
         self.ret.append(v)
 
