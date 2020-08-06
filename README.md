@@ -517,5 +517,7 @@ giant JSON string.
 
 ## Other Languages
 
+- Go port by [@aluttik](https://github.com/aluttik):
+    <https://github.com/aluttik/go-crossplane>
 - Ruby port by [@gdanko](https://github.com/gdanko):
     <https://github.com/gdanko/crossplane>
