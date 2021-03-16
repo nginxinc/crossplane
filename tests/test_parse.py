@@ -108,6 +108,111 @@ def test_includes_regular():
         ]
     }
 
+def test_includes_regular_combined():
+    dirname = os.path.join(here, 'configs', 'includes-regular-combined')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(config, combine=True)
+    assert payload == {
+        'status': 'failed',
+        'errors': [
+            {
+                'file': os.path.join(dirname, 'conf.d', 'server.conf'),
+                'error': '[Errno 2] No such file or directory: %r' % os.path.join(dirname, 'bar.conf'),
+                'line': 14
+            }
+        ],
+        'config': [
+            {
+                'file': os.path.join(dirname, 'nginx.conf'),
+                'status': 'failed',
+                'errors': [
+                    {
+                        'error': '[Errno 2] No such file or directory: %r' % os.path.join(dirname, 'bar.conf'),
+                        'line': 14
+                    }
+                ],
+                'parsed': [
+                    {
+                        'directive': 'events',
+                        'file': os.path.join(dirname, 'nginx.conf'),
+                        'line': 1,
+                        'args': [],
+                        'block': []
+                    },
+                    {
+                        'directive': 'http',
+                        'file': os.path.join(dirname, 'nginx.conf'),
+                        'line': 2,
+                        'args': [],
+                        'block': [
+                            {
+                                'file': os.path.join(dirname, 'conf.d', 'server.conf'),
+                                'directive': 'server',
+                                'line': 1,
+                                'args': [],
+                                'block': [
+                                    {
+                                        'file': os.path.join(dirname, 'conf.d', 'server.conf'),
+                                        'directive': 'listen',
+                                        'line': 2,
+                                        'args': ['127.0.0.1:8080']
+                                    },
+                                    {
+                                        'file': os.path.join(dirname, 'conf.d', 'server.conf'),
+                                        'directive': 'server_name',
+                                        'line': 3,
+                                        'args': ['default_server']
+                                    },
+                                    {
+                                        'file': os.path.join(dirname, 'foo.conf'),
+                                        'directive': 'location',
+                                        'line': 1,
+                                        'args': ['/foo'],
+                                        'block': [
+                                            {
+                                                'file': os.path.join(dirname, 'foo.conf'),
+                                                'directive': 'return',
+                                                'line': 2,
+                                                'args': ['200', 'foo']
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        'file': os.path.join(dirname, 'conf.d', 'server.conf'),
+                                        'directive': 'location',
+                                        'line': 6,
+                                        'args': ['/A'],
+                                        'block': [
+                                            {
+                                                'file': os.path.join(dirname, 'conf.d', 'server.conf'),
+                                                'directive': 'return',
+                                                'line': 7,
+                                                'args': ['200', 'A']
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        'file': os.path.join(dirname, 'conf.d', 'server.conf'),
+                                        'directive': 'location',
+                                        'line': 10,
+                                        'args': ['/B'],
+                                        'block': [
+                                            {
+                                                'file': os.path.join(dirname, 'conf.d', 'server.conf'),
+                                                'directive': 'return',
+                                                'line': 11,
+                                                'args': ['200', 'B']
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
 
 def test_includes_globbed():
     dirname = os.path.join(here, 'configs', 'includes-globbed')
