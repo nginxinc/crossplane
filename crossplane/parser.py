@@ -69,6 +69,41 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
         payload['status'] = 'failed'
         payload['errors'].append(payload_error)
 
+    def _handle_include(parsing, ctx, stmt):
+        args = stmt['args']
+        pattern = args[0]
+        if not os.path.isabs(args[0]):
+            pattern = os.path.join(config_dir, args[0])
+
+        stmt['includes'] = []
+
+        # get names of all included files
+        if glob.has_magic(pattern):
+            fnames = glob.glob(pattern)
+            fnames.sort()
+        else:
+            try:
+                # if the file pattern was explicit, nginx will check
+                # that the included file can be opened and read
+                open(str(pattern)).close()
+                fnames = [pattern]
+            except Exception as e:
+                fnames = []
+                e.lineno = stmt['line']
+                if catch_errors:
+                    _handle_error(parsing, e)
+                else:
+                    raise e
+
+        for fname in fnames:
+            # the included set keeps files from being parsed twice
+            # TODO: handle files included from multiple contexts
+            if fname not in included:
+                included[fname] = len(includes)
+                includes.append((fname, ctx))
+            index = included[fname]
+            stmt['includes'].append(index)
+
     def _parse(parsing, tokens, ctx=(), consume=False):
         """Recursively parses nginx config contexts"""
         fname = parsing['file']
@@ -162,38 +197,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
 
             # add "includes" to the payload if this is an include statement
             if not single and stmt['directive'] == 'include':
-                pattern = args[0]
-                if not os.path.isabs(args[0]):
-                    pattern = os.path.join(config_dir, args[0])
-
-                stmt['includes'] = []
-
-                # get names of all included files
-                if glob.has_magic(pattern):
-                    fnames = glob.glob(pattern)
-                    fnames.sort()
-                else:
-                    try:
-                        # if the file pattern was explicit, nginx will check
-                        # that the included file can be opened and read
-                        open(str(pattern)).close()
-                        fnames = [pattern]
-                    except Exception as e:
-                        fnames = []
-                        e.lineno = stmt['line']
-                        if catch_errors:
-                            _handle_error(parsing, e)
-                        else:
-                            raise e
-
-                for fname in fnames:
-                    # the included set keeps files from being parsed twice
-                    # TODO: handle files included from multiple contexts
-                    if fname not in included:
-                        included[fname] = len(includes)
-                        includes.append((fname, ctx))
-                    index = included[fname]
-                    stmt['includes'].append(index)
+                _handle_include(parsing, ctx, stmt)
 
             # if this statement terminated with '{' then it is a block
             if token == '{' and not quoted:
