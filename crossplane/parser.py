@@ -70,10 +70,9 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
         payload['errors'].append(payload_error)
 
     def _handle_include(parsing, ctx, stmt):
-        args = stmt['args']
-        pattern = args[0]
-        if not os.path.isabs(args[0]):
-            pattern = os.path.join(config_dir, args[0])
+        pattern = stmt['args'][0]
+        if not os.path.isabs(pattern):
+            pattern = os.path.join(config_dir, pattern)
 
         stmt['includes'] = []
 
