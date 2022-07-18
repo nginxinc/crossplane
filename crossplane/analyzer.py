@@ -2126,23 +2126,26 @@ def analyze(fname, stmt, term, ctx=(), strict=False, check_ctx=True,
     directive = stmt['directive']
     line = stmt['line']
 
-    # if strict and directive isn't recognized then throw error
-    if strict and directive not in DIRECTIVES:
-        reason = 'unknown directive "%s"' % directive
-        raise NgxParserDirectiveUnknownError(reason, fname, line)
+    ctx_http_types = len(ctx) >= 2 and ctx[0] == 'http' and ctx[-1] == 'types'
 
-    # if we don't know where this directive is allowed and how
-    # many arguments it can take then don't bother analyzing it
-    if ctx not in CONTEXTS or directive not in DIRECTIVES:
-        return
+    if not ctx_http_types:
+        # if strict and directive isn't recognized then throw error
+        if strict and directive not in DIRECTIVES:
+            reason = 'unknown directive "%s"' % directive
+            raise NgxParserDirectiveUnknownError(reason, fname, line)
+
+        # if we don't know where this directive is allowed and how
+        # many arguments it can take then don't bother analyzing it
+        if ctx not in CONTEXTS or directive not in DIRECTIVES:
+            return
 
     args = stmt.get('args') or []
     n_args = len(args)
 
-    masks = DIRECTIVES[directive]
+    masks = [NGX_CONF_1MORE] if ctx_http_types else DIRECTIVES[directive]
 
     # if this directive can't be used in this context then throw an error
-    if check_ctx:
+    if not ctx_http_types and check_ctx:
         masks = [mask for mask in masks if mask & CONTEXTS[ctx]]
         if not masks:
             reason = '"%s" directive is not allowed here' % directive

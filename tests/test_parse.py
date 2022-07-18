@@ -975,3 +975,58 @@ def test_comments_between_args():
             }
         ]
     }
+
+
+def test_types_checks():
+    dirname = os.path.join(here, 'configs', 'types')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(
+        config,
+        strict=True,
+        check_ctx=True,
+        check_args=True,
+    )
+
+    # Check that strict mode doesn't raise errors when parsing http types blocks
+    assert payload == {
+        'status': 'ok',
+        'errors': [],
+        'config': [
+            {
+                'file': os.path.join(dirname, 'nginx.conf'),
+                'status': 'ok',
+                'errors': [],
+                'parsed': [
+                    {
+                        'directive': 'http',
+                        'line': 1,
+                        'args': [],
+                        'block': [
+                            {
+                                'directive': 'types',
+                                'line': 2,
+                                'args': [],
+                                'block': [
+                                    {
+                                        'directive': 'text/html',
+                                        'line': 3,
+                                        'args': ['html']
+                                    },
+                                    {
+                                        'directive': 'image/gif',
+                                        'line': 4,
+                                        'args': ['gif']
+                                    },
+                                    {
+                                        'directive': 'image/jpeg',
+                                        'line': 5,
+                                        'args': ['jpg', 'jpeg']
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }

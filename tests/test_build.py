@@ -226,6 +226,49 @@ def test_build_multiple_comments_on_one_line():
     assert built == '#comment1\nuser root; #comment2 #comment3'
 
 
+def test_build_types():
+    payload = [
+        {
+            'directive': 'http',
+            'line': 1,
+            'args': [],
+            'block': [
+                {
+                    'directive': 'types',
+                    'line': 2,
+                    'args': [],
+                    'block': [
+                        {
+                            'directive': 'text/html',
+                            'line': 3,
+                            'args': ['html']
+                        },
+                        {
+                            'directive': 'image/gif',
+                            'line': 4,
+                            'args': ['gif']
+                        },
+                        {
+                            'directive': 'image/jpeg',
+                            'line': 5,
+                            'args': ['jpg', 'jpeg']
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+    built = crossplane.build(payload, indent=4, tabs=False)
+    assert built == '\n'.join([
+        'http {',
+        '    types {',
+        '        text/html html;',
+        '        image/gif gif;',
+        '        image/jpeg jpg jpeg;',
+        '    }',
+        '}'
+    ])
+
 
 def test_build_files_with_missing_status_and_errors(tmpdir):
     assert len(tmpdir.listdir()) == 0
