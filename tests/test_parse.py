@@ -975,3 +975,143 @@ def test_comments_between_args():
             }
         ]
     }
+
+
+def test_map_strict_ctx():
+    dirname = os.path.join(here, 'configs', 'map')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(
+        config,
+        strict=True,
+        check_ctx=True,
+        check_args=True,
+    )
+
+    # Check that errors aren't raised when parsing map blocks and strict and
+    # check_ctx are both enabled
+    assert payload == {
+        'status': 'ok',
+        'errors': [],
+        'config': [
+            {
+                'file': os.path.join(dirname, 'nginx.conf'),
+                'status': 'ok',
+                'errors': [],
+                'parsed': [
+                    {
+                        'directive': 'http',
+                        'line': 1,
+                        'args': [],
+                        'block': [
+                            {
+                                'directive': 'map',
+                                'line': 2,
+                                'args': ['$http_host', '$name'],
+                                'block': [
+                                    {
+                                        'directive': 'hostnames',
+                                        'line': 3,
+                                        'args': []
+                                    },
+                                    {
+                                        'directive': 'volatile',
+                                        'line': 4,
+                                        'args': []
+                                    },
+                                    {
+                                        'directive': 'default',
+                                        'line': 5,
+                                        'args': ['0']
+                                    },
+                                    {
+                                        'directive': 'example.com',
+                                        'line': 6,
+                                        'args': ['1']
+                                    },
+                                    {
+                                        'directive': 'include',
+                                        'line': 7,
+                                        'args': ['map_values.conf'],
+                                        'includes': [1]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                'file': os.path.join(dirname, 'map_values.conf'),
+                'status': 'ok',
+                'errors': [],
+                'parsed': [
+                    {
+                        'directive': '*.example.com',
+                        'line': 1,
+                        'args': ['2']
+                    },
+                    {
+                        'directive': '\\volatile',
+                        'line': 2,
+                        'args': ['3']
+                    }
+                ]
+            }
+        ]
+    }
+
+
+def test_types_strict_ctx():
+    dirname = os.path.join(here, 'configs', 'types')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(
+        config,
+        strict=True,
+        check_ctx=True,
+        check_args=True,
+    )
+
+    # Check that errors aren't raised when parsing http types blocks and strict
+    # and check_ctx are both enabled
+    assert payload == {
+        'status': 'ok',
+        'errors': [],
+        'config': [
+            {
+                'file': os.path.join(dirname, 'nginx.conf'),
+                'status': 'ok',
+                'errors': [],
+                'parsed': [
+                    {
+                        'directive': 'http',
+                        'line': 1,
+                        'args': [],
+                        'block': [
+                            {
+                                'directive': 'types',
+                                'line': 2,
+                                'args': [],
+                                'block': [
+                                    {
+                                        'directive': 'text/html',
+                                        'line': 3,
+                                        'args': ['html']
+                                    },
+                                    {
+                                        'directive': 'image/gif',
+                                        'line': 4,
+                                        'args': ['gif']
+                                    },
+                                    {
+                                        'directive': 'image/jpeg',
+                                        'line': 5,
+                                        'args': ['jpg', 'jpeg']
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
