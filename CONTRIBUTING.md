@@ -90,9 +90,8 @@ development.
 Before you submit a pull request, check that it meets these guidelines:
 
 1. The pull request should include tests.
-2. The pull request should work for CPython 2.6, 2.7, 3.3, 3.4, 3.5,
-    3.6, and 3.7 and for PyPy. Check
-    <https://travis-ci.org/nginxinc/crossplane> under pull requests for
+2. The pull request should work for CPython 2.7, 3.6, 3.7, 3.8, 3.9, 3.10, and PyPy. Check
+    <https://github.com/nginxinc/crossplane/actions/workflows/crossplane-ci.yml> under pull requests for
     active pull requests or run the `tox` command and make sure that the
     tests pass for all supported Python versions.
 3. Make sure to add yourself to the Contributors list in AUTHORS.rst :)
