@@ -975,3 +975,60 @@ def test_comments_between_args():
             }
         ]
     }
+
+def test_non_unicode():
+    dirname = os.path.join(here, 'configs', 'non-unicode')
+    config = os.path.join(dirname, 'nginx.conf')
+
+    payload = crossplane.parse(config, comments=True)
+
+    assert payload == {
+        "errors": [],
+        "status": "ok",
+        "config": [
+            {
+                "status": "ok",
+                "errors": [],
+                "file": os.path.join(dirname, 'nginx.conf'),
+                "parsed": [
+                    {
+                        "directive": "http",
+                        "line": 1,
+                        "args": [],
+                        "block": [
+                            {
+                                "directive": "server",
+                                "line": 2,
+                                "args": [],
+                                "block": [
+                                    {
+                                        "directive": "location",
+                                        "line": 3,
+                                        "args": [
+                                            "/city"
+                                        ],
+                                        "block": [
+                                            {
+                                                "directive": "#",
+                                                "line": 4,
+                                                "args": [],
+                                                "comment": u" M\ufffdlln"
+                                            },
+                                            {
+                                                "directive": "return",
+                                                "line": 5,
+                                                "args": [
+                                                    "200",
+                                                    u"M\ufffdlln\\n"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }

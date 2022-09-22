@@ -145,7 +145,7 @@ def _balance_braces(tokens, filename=None):
 
 def lex(filename):
     """Generates tokens from an nginx config file"""
-    with io.open(filename, mode='r', encoding='utf-8') as f:
+    with io.open(filename, mode='r', encoding='utf-8', errors='replace') as f:
         it = _lex_file_object(f)
         it = _balance_braces(it, filename)
         for token, line, quoted in it:
