@@ -152,9 +152,15 @@ def minify(filename, out):
         o.close()
 
 
-def format(filename, out, indent=4, tabs=False):
-    output = format_file(filename, indent=indent, tabs=tabs)
-    o = sys.stdout if out is None else io.open(out, 'w', encoding='utf-8')
+def format(filename, out, indent=4, tabs=False, align=False, spacious=False, write=False):
+    output = format_file(filename, indent=indent, tabs=tabs, align=align, spacious=spacious)
+
+    o = sys.stdout
+    if write:
+        o = io.open(filename, 'w', encoding='utf-8')
+    elif out is not None:
+        o = io.open(out, 'w', encoding='utf-8')
+
     try:
         o.write(output + u'\n')
     finally:
@@ -226,7 +232,11 @@ def parse_args(args=None):
 
     p = create_subparser(format, 'formats an nginx config file')
     p.add_argument('filename', help='the nginx config file')
-    p.add_argument('-o', '--out', type=str, help='write output to a file')
+    p.add_argument('--align', action='store_true', help='align directives within blocks')
+    p.add_argument('--spacious', action='store_true', help="add line breaks after blocks")
+    g = p.add_mutually_exclusive_group()
+    g.add_argument('-o', '--out', type=str, help='write output to a file')
+    g.add_argument('-w', '--write', action='store_true', help='write output to a source file')
     g = p.add_mutually_exclusive_group()
     g.add_argument('-i', '--indent', type=int, metavar='NUM', help='number of spaces to indent output', default=4)
     g.add_argument('-t', '--tabs', action='store_true', help='indent with tabs instead of spaces')
