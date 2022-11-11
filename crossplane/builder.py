@@ -83,7 +83,9 @@ def build(payload, indent=4, tabs=False, header=False, align=False, spacious=Fal
 
     def _build_block(output, block, depth, last_line):
         margin = padding * depth
-        max_directive_length = max(len(stmt['directive']) for stmt in block)
+
+        if len(block) > 0:
+            max_directive_length = max(len(stmt['directive']) for stmt in block)
 
         for stmt in block:
             directive = _enquote(stmt['directive'])
