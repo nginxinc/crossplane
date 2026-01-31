@@ -58,7 +58,7 @@ def test_messy_config():
         ('{', 16), ('}', 16), ('# hello', 16), ('if', 17),
         ('($request_method', 17), ('=', 17), ('P\\{O\\)\\###\\;ST', 17),
         (')', 17), ('{', 17), ('}', 17), ('location', 18), ('/status.html', 18),
-        ('{', 18), ('try_files', 19), ('/abc/${uri} /abc/${uri}.html', 19),
+        ('{', 18), ('try_files', 19), ('/abc/${uri}', 19), ('/abc/${uri}.html', 19),
         ('=404', 19), (';', 19), ('}', 20), ('location', 21),
         ('/sta;\n                    tus', 21), ('{', 22), ('return', 22),
         ('302', 22), ('/status.html', 22), (';', 22), ('}', 22),
@@ -92,3 +92,50 @@ def test_quoted_right_brace():
         '"referer": "$http_referer", ', '"agent": "$http_user_agent"', '}',
         ';', '}'
     ]
+
+
+def test_lex_string_flushes_last_token_at_eof():
+    tokens = list(crossplane.lex_string('events', filename='<string>'))
+    assert list((token, line) for token, line, quoted in tokens) == [('events', 1)]
+
+
+def test_lex_string_comment_without_trailing_newline():
+    tokens = list(crossplane.lex_string('#comment', filename='<string>'))
+    assert list((token, line) for token, line, quoted in tokens) == [('#comment', 1)]
+
+
+def test_braced_variable_whitespace_split():
+    """Test that whitespace after closing brace correctly ends the token."""
+    # Two braced variables followed by space and another variable
+    tokens = list(crossplane.lex_string('map ${var1}${var2} $result { }'))
+    token_values = [token for token, line, quoted in tokens]
+    assert token_values == ['map', '${var1}${var2}', '$result', '{', '}']
+
+
+def test_braced_variable_space_between():
+    """Test that space between braced variables splits them."""
+    tokens = list(crossplane.lex_string('set $x ${var1} ${var2};'))
+    token_values = [token for token, line, quoted in tokens]
+    assert token_values == ['set', '$x', '${var1}', '${var2}', ';']
+
+
+def test_braced_variable_no_space():
+    """Test that adjacent braced variables stay as one token."""
+    tokens = list(crossplane.lex_string('set $x ${var1}${var2};'))
+    token_values = [token for token, line, quoted in tokens]
+    assert token_values == ['set', '$x', '${var1}${var2}', ';']
+
+
+def test_braced_variable_text_after():
+    """Test that text directly after closing brace stays as one token."""
+    tokens = list(crossplane.lex_string('set $x ${var}text;'))
+    token_values = [token for token, line, quoted in tokens]
+    assert token_values == ['set', '$x', '${var}text', ';']
+
+
+def test_braced_variable_in_map_directive():
+    """Test braced variables in a realistic map directive context."""
+    config = 'map ${detect_bot}${geo_list} $intermed { default 0; }'
+    tokens = list(crossplane.lex_string(config))
+    token_values = [token for token, line, quoted in tokens]
+    assert token_values == ['map', '${detect_bot}${geo_list}', '$intermed', '{', 'default', '0', ';', '}']

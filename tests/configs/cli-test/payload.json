@@ -1,0 +1,61 @@
+{
+    "status": "ok",
+    "errors": [],
+    "config": [
+        {
+            "file": "nginx.conf",
+            "status": "ok",
+            "errors": [],
+            "parsed": [
+                {
+                    "directive": "events",
+                    "line": 1,
+                    "args": [],
+                    "block": [
+                        {
+                            "directive": "worker_connections",
+                            "line": 2,
+                            "args": ["1024"]
+                        }
+                    ]
+                },
+                {
+                    "directive": "http",
+                    "line": 5,
+                    "args": [],
+                    "block": [
+                        {
+                            "directive": "server",
+                            "line": 6,
+                            "args": [],
+                            "block": [
+                                {
+                                    "directive": "listen",
+                                    "line": 7,
+                                    "args": ["80"]
+                                },
+                                {
+                                    "directive": "server_name",
+                                    "line": 8,
+                                    "args": ["localhost"]
+                                },
+                                {
+                                    "directive": "location",
+                                    "line": 10,
+                                    "args": ["/"],
+                                    "block": [
+                                        {
+                                            "directive": "return",
+                                            "line": 11,
+                                            "args": ["200", "Hello, World!"]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

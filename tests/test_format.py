@@ -39,7 +39,7 @@ def test_format_messy_config():
         '        if ($request_method = P\{O\)\###\;ST) {',
         '        }',
         '        location /status.html {',
-        "            try_files '/abc/${uri} /abc/${uri}.html' =404;",
+        "            try_files /abc/${uri} /abc/${uri}.html =404;",
         '        }',
         r"        location '/sta;\n                    tus' {",
         '            return 302 /status.html;',

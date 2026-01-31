@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-from .parser import parse
-from .lexer import lex
+from .parser import parse, parse_string
+from .lexer import lex, lex_string
 from .builder import build
 from .formatter import format
 from .ext.lua import LuaBlockPlugin
 
-__all__ = ['parse', 'lex', 'build', 'format']
+__all__ = ['parse', 'parse_string', 'lex', 'lex_string', 'build', 'format']
 
 __title__ = 'crossplane'
 __summary__ = 'Reliable and fast NGINX configuration file parser.'
 __url__ = 'https://github.com/nginxinc/crossplane'
 
-__version__ = '0.5.7'
+__version__ = '0.5.16'
 
 __author__ = 'Arie van Luttikhuizen'
 __email__ = 'aluttik@gmail.com'

@@ -110,11 +110,14 @@ class LuaBlockPlugin(CrossplaneExtension):
                 token += quote
                 char, line = next(char_iterator)
                 while char != quote:
-                    token += quote if char == quote else char
+                    if char == '\\':
+                        token += char
+                        char, line = next(char_iterator)
+                    token += char
                     char, line = next(char_iterator)
 
             if depth < 0:
-                reason = 'unxpected "}"'
+                reason = 'unexpected "}"'
                 raise LuaBlockParserSyntaxError(reason, filename=None, lineno=line)
 
             if depth == 0:

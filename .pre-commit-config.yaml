@@ -1,0 +1,67 @@
+# Pre-commit hooks for crossplane (mirrors ~/Projects/gixy style)
+# See https://pre-commit.com for more information
+
+repos:
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  # Ruff for linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        # crossplane is a legacy codebase with Python 2 compatibility shims;
+        # limit ruff to scripts to avoid a massive reformat/lint-only migration.
+        files: ^scripts/.*\.py$
+      - id: ruff-format
+        files: ^scripts/.*\.py$
+
+  # Bandit for security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml"]
+        additional_dependencies: ["bandit[toml]"]
+        # Bandit is useful on our own scripts; the main package has known
+        # false positives (e.g. B105 on token buffers) and legacy patterns.
+        files: ^scripts/.*\.py$
+
+  # Local hooks
+  - repo: local
+    hooks:
+      # Check for hardcoded IPs (similar to SonarCloud S1313)
+      - id: check-hardcoded-ips
+        name: Check for hardcoded IP addresses
+        description: Catches hardcoded IPs that SonarCloud would flag
+        entry: python3 scripts/check_hardcoded_ips.py
+        language: system
+        types: [python]
+
+      # Run full tests on Python 3.6 before commit (mirrors gixy)
+      - id: pytest-py36
+        name: Run tests on Python 3.6
+        description: Full test suite on minimum supported Python
+        # Use CROSSPLANE_PY36 to override the interpreter path if needed.
+        entry: bash -c '"${CROSSPLANE_PY36:-${PYENV_ROOT:-$HOME/.pyenv}/versions/3.6.15/bin/python}" -m pytest tests/ -q --tb=line'
+        language: system
+        pass_filenames: false
+        files: ^(crossplane/.*\.py|tests/.*\.py)$
+        stages: [pre-commit]
+
+      # Prevent committing hardcoded absolute local paths (e.g. /Users/<name>/...)
+      - id: check-absolute-paths
+        name: Check for hardcoded absolute paths
+        description: Prevent committing absolute dev-machine paths (macOS/Linux/Windows home dirs)
+        entry: python3 scripts/check_absolute_paths.py
+        language: system
+        files: \.(py|ya?ml|toml)$

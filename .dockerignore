@@ -1,0 +1,14 @@
+.git
+.github
+.tox
+.venv
+build
+dist
+crossplane.egg-info
+tests
+ext
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+

@@ -4,15 +4,11 @@ from __future__ import print_function
 
 import io
 import os
+import re
 import shutil
 import sys
 
 from setuptools import find_packages, setup, Command
-
-from crossplane import (
-    __title__, __summary__, __url__, __version__, __author__, __email__,
-    __license__
-)
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -56,17 +52,46 @@ class UploadCommand(Command):
         sys.exit()
 
 
+def _read_about():
+    """
+    Read package metadata without importing `crossplane` (import has side effects).
+    """
+    about = {}
+    init_py = os.path.join(here, "crossplane", "__init__.py")
+    with io.open(init_py, encoding="utf-8") as f:
+        contents = f.read()
+
+    keys = ["__summary__", "__url__", "__version__", "__author__", "__email__", "__license__"]
+    for key in keys:
+        # NOTE: This must match normal Python assignment like:
+        # __summary__ = '...'
+        # Keep escapes minimal; raw strings already handle backslashes.
+        m = re.search(
+            r"^%s\s*=\s*['\"]([^'\"]+)['\"]\s*$" % re.escape(key),
+            contents,
+            re.M,
+        )
+        if not m:
+            raise RuntimeError("Could not find %s in %s" % (key, init_py))
+        about[key] = m.group(1)
+    return about
+
+
+ABOUT = _read_about()
+
 setup(
-    name=__title__,
-    version=__version__,
-    description=__summary__,
+    # PyPI distribution name (intentionally different from import name `crossplane`)
+    name="ngxparse",
+    version=ABOUT["__version__"],
+    description=ABOUT["__summary__"],
     long_description=get_readme(),
     long_description_content_type='text/markdown',
-    author=__author__,
-    author_email=__email__,
-    url=__url__,
+    author=ABOUT["__author__"],
+    author_email=ABOUT["__email__"],
+    # Point users at this fork's repo (upstream URL is still available in history)
+    url="https://github.com/dvershinin/crossplane",
     packages=find_packages(exclude=['tests','tests.*']),
-    license=__license__,
+    license=ABOUT["__license__"],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

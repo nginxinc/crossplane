@@ -1,0 +1,27 @@
+[build-system]
+# Python 3.6 cannot install modern setuptools (>=61). Use env markers so
+# PEP517/660 editable installs work across the supported test matrix.
+requires = [
+  "setuptools<60; python_version<'3.7'",
+  "setuptools>=61; python_version>='3.7'",
+  "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 88
+target-version = "py37"
+extend-exclude = [
+  ".venv",
+  ".tox",
+  "dist",
+  "build",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B105"]

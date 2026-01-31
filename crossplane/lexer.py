@@ -27,7 +27,7 @@ def _iterlinecount(iterable):
 
 
 @fix_pep_479
-def _lex_file_object(file_obj):
+def _lex_file_object(file_obj, filename=None):
     """
     Generates token tuples from an nginx config file object
 
@@ -57,13 +57,23 @@ def _lex_file_object(file_obj):
 
             # disregard until char isn't a whitespace character
             while char.isspace():
-                char, line = next(it)
+                try:
+                    char, line = next(it)
+                except StopIteration:
+                    return
 
         # if starting comment
         if not token and char == '#':
-            while not char.endswith('\n'):
+            while True:
+                if char.endswith('\n'):
+                    break
                 token = token + char
-                char, _ = next(it)
+                try:
+                    char, _ = next(it)
+                except StopIteration:
+                    # comment ended at EOF without a trailing newline
+                    yield (token, line, False)
+                    return
             yield (token, line, False)
             token = ''
             continue
@@ -76,7 +86,16 @@ def _lex_file_object(file_obj):
             next_token_is_directive = False
             while token[-1] != '}' and not char.isspace():
                 token += char
-                char, line = next(it)
+                try:
+                    char, line = next(it)
+                except StopIteration:
+                    reason = 'unexpected end of file, expecting "}"'
+                    raise NgxParserSyntaxError(reason, filename, token_line)
+            # After closing brace, check if whitespace ends this token
+            if char.isspace():
+                yield (token, token_line, False)
+                token = ''
+                continue
 
         # if a quote is found, add the whole string to the token buffer
         if char in ('"', "'"):
@@ -86,10 +105,19 @@ def _lex_file_object(file_obj):
                 continue
 
             quote = char
-            char, line = next(it)
+            try:
+                char, line = next(it)
+            except StopIteration:
+                reason = 'unexpected end of file, expecting "%s"' % quote
+                raise NgxParserSyntaxError(reason, filename, token_line)
+
             while char != quote:
                 token += quote if char == '\\' + quote else char
-                char, line = next(it)
+                try:
+                    char, line = next(it)
+                except StopIteration:
+                    reason = 'unexpected end of file, expecting "%s"' % quote
+                    raise NgxParserSyntaxError(reason, filename, token_line)
 
             yield (token, token_line, True)  # True because this is in quotes
 
@@ -119,6 +147,10 @@ def _lex_file_object(file_obj):
         # append char to the token buffer
         token += char
 
+    # flush the final token at EOF (e.g. no trailing whitespace/newline)
+    if token:
+        yield (token, token_line, False)
+
 
 def _balance_braces(tokens, filename=None):
     """Raises syntax errors if braces aren't balanced"""
@@ -146,7 +178,7 @@ def _balance_braces(tokens, filename=None):
 def lex(filename):
     """Generates tokens from an nginx config file"""
     with io.open(filename, mode='r', encoding='utf-8', errors='replace') as f:
-        it = _lex_file_object(f)
+        it = _lex_file_object(f, filename=filename)
         it = _balance_braces(it, filename)
         for token, line, quoted in it:
             yield (token, line, quoted)
@@ -155,3 +187,16 @@ def lex(filename):
 def register_external_lexer(directives, lexer):
     for directive in directives:
         EXTERNAL_LEXERS[directive] = lexer
+
+
+def lex_string(text, filename=None):
+    """Generates tokens from an nginx config string.
+
+    :param text: configuration text to lex
+    :param filename: optional filename to use in error reporting
+    """
+    f = io.StringIO(text)
+    it = _lex_file_object(f, filename=filename)
+    it = _balance_braces(it, filename)
+    for token, line, quoted in it:
+        yield (token, line, quoted)

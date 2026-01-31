@@ -109,6 +109,36 @@ def test_includes_regular():
     }
 
 
+def test_parse_string_simple_matches_file():
+    dirname = os.path.join(here, 'configs', 'simple')
+    config_path = os.path.join(dirname, 'nginx.conf')
+    with open(config_path, 'r') as f:
+        text = f.read()
+    payload_file = crossplane.parse(config_path)
+    payload_string = crossplane.parse_string(text, filename=config_path)
+    assert payload_file == payload_string
+
+
+def test_parse_string_includes_regular_matches_file():
+    dirname = os.path.join(here, 'configs', 'includes-regular')
+    config_path = os.path.join(dirname, 'nginx.conf')
+    with open(config_path, 'r') as f:
+        text = f.read()
+    payload_file = crossplane.parse(config_path)
+    payload_string = crossplane.parse_string(text, filename=config_path)
+    assert payload_file == payload_string
+
+
+def test_parse_string_includes_globbed_combined_matches_file():
+    dirname = os.path.join(here, 'configs', 'includes-globbed')
+    config_path = os.path.join(dirname, 'nginx.conf')
+    with open(config_path, 'r') as f:
+        text = f.read()
+    payload_file = crossplane.parse(config_path, combine=True)
+    payload_string = crossplane.parse_string(text, filename=config_path, combine=True)
+    assert payload_file == payload_string
+
+
 def test_includes_globbed():
     dirname = os.path.join(here, 'configs', 'includes-globbed')
     config = os.path.join(dirname, 'nginx.conf')
@@ -853,6 +883,19 @@ def test_parse_missing_semicolon():
     }
 
 
+def test_parse_string_unterminated_directive_at_eof(tmp_path):
+    filename = str(tmp_path / 'nginx.conf')
+    payload = crossplane.parse_string('user nobody', filename=filename)
+    assert payload['status'] == 'failed'
+    assert payload['errors'] == [
+        {
+            'file': filename,
+            'error': 'directive "user" is not terminated by ";" in %s:1' % filename,
+            'line': 1
+        }
+    ]
+
+
 def test_combine_parsed_missing_values():
     dirname = os.path.join(here, 'configs', 'includes-regular')
     config = os.path.join(dirname, 'nginx.conf')
@@ -1032,3 +1075,111 @@ def test_non_unicode():
             }
         ]
     }
+
+
+def test_includes_regular_combined():
+    """Test that directives after includes have correct file attribute when combine=True.
+
+    This tests for a variable scope leak bug where the `fname` loop variable in the
+    include-handling block would shadow the outer `fname`, causing directives after
+    includes to have incorrect `file` attributes.
+    """
+    dirname = os.path.join(here, 'configs', 'includes-regular-combined')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(config, combine=True)
+    assert payload == {
+        'status': 'ok',
+        'errors': [],
+        'config': [
+            {
+                'file': os.path.join(dirname, 'nginx.conf'),
+                'status': 'ok',
+                'errors': [],
+                'parsed': [
+                    {
+                        'directive': 'events',
+                        'file': os.path.join(dirname, 'nginx.conf'),
+                        'line': 1,
+                        'args': [],
+                        'block': []
+                    },
+                    {
+                        'directive': 'http',
+                        'file': os.path.join(dirname, 'nginx.conf'),
+                        'line': 2,
+                        'args': [],
+                        'block': [
+                            {
+                                'directive': 'server',
+                                'file': os.path.join(dirname, 'server.conf'),
+                                'line': 1,
+                                'args': [],
+                                'block': [
+                                    {
+                                        'directive': 'listen',
+                                        'file': os.path.join(dirname, 'server.conf'),
+                                        'line': 2,
+                                        'args': ['8080']
+                                    }
+                                ]
+                            },
+                            {
+                                'directive': 'default_type',
+                                'file': os.path.join(dirname, 'nginx.conf'),
+                                'line': 4,
+                                'args': ['text/plain']
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+
+
+def test_parse_map_strict():
+    """Test that map blocks parse correctly in strict mode."""
+    dirname = os.path.join(here, 'configs', 'map')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(config, strict=True)
+    assert payload['status'] == 'ok'
+    assert payload['errors'] == []
+
+    # verify the structure
+    http_block = payload['config'][0]['parsed'][1]
+    assert http_block['directive'] == 'http'
+
+    # check first map block
+    map1 = http_block['block'][0]
+    assert map1['directive'] == 'map'
+    assert map1['args'] == ['$uri', '$new']
+    assert len(map1['block']) == 3  # default, ~^/news, ~^/blog
+
+    # check second map block has hostnames
+    map2 = http_block['block'][1]
+    assert map2['directive'] == 'map'
+    assert map2['args'] == ['$http_host', '$backend']
+    assert len(map2['block']) == 3  # hostnames, default, *.example.com
+
+
+def test_parse_types_strict():
+    """Test that types blocks parse correctly in strict mode."""
+    dirname = os.path.join(here, 'configs', 'types')
+    config = os.path.join(dirname, 'nginx.conf')
+    payload = crossplane.parse(config, strict=True)
+    assert payload['status'] == 'ok'
+    assert payload['errors'] == []
+
+    # verify the structure
+    http_block = payload['config'][0]['parsed'][1]
+    assert http_block['directive'] == 'http'
+
+    # check types block
+    types_block = http_block['block'][0]
+    assert types_block['directive'] == 'types'
+    assert len(types_block['block']) == 4  # text/html, text/css, application/javascript, image/png
+
+    # verify some MIME type entries
+    mime_entries = {stmt['directive']: stmt['args'] for stmt in types_block['block']}
+    assert mime_entries['text/html'] == ['html', 'htm']
+    assert mime_entries['text/css'] == ['css']

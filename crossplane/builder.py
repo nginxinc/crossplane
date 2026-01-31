@@ -72,6 +72,41 @@ def _enquote(arg):
 
 
 def build(payload, indent=4, tabs=False, header=False):
+    """
+    Builds an nginx config string from a parsed payload.
+
+    Supported inputs:
+      - A list of Directive objects (the traditional API)
+      - The full payload returned by crossplane.parse()/parse_string()
+      - The payload['config'] list returned by crossplane.parse()/parse_string()
+
+    Note: if a full parse payload contains multiple config files, build() will
+    only build the first config's parsed directives (i.e. payload['config'][0]['parsed']).
+    Use build_files() if you need to write multiple files.
+    """
+    # Allow passing the full parse payload (issue #110) or payload['config']
+    if isinstance(payload, dict) and 'config' in payload:
+        configs = payload.get('config') or []
+        payload = (configs[0].get('parsed') or []) if configs else []
+    elif (isinstance(payload, list) and payload and isinstance(payload[0], dict) and
+          'parsed' in payload[0] and 'directive' not in payload[0]):
+        # Looks like payload['config'] (list of Config objects)
+        payload = payload[0].get('parsed') or []
+
+    payload = payload or []
+    if not isinstance(payload, list):
+        raise TypeError(
+            'crossplane.build() expects a list of directives, or a parse payload '
+            '(dict with key "config").'
+        )
+
+    if payload and (not isinstance(payload[0], dict) or 'directive' not in payload[0]):
+        raise TypeError(
+            'crossplane.build() expected a list of directive objects (dicts with at least a '
+            '"directive" key, e.g. items from a "parsed" list), but found list elements of an '
+            'unexpected shape.'
+        )
+
     padding = '\t' if tabs else ' ' * indent
 
     head = ''
