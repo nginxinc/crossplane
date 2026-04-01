@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 import itertools
 import io
+import typing as t
 
 from .compat import fix_pep_479
 from .errors import NgxParserSyntaxError
+from .typedefs import StatusType, DictResponse, DictFile, DictStatement
 
-EXTERNAL_LEXERS = {}
+ExtLexerType = t.Callable[[t.Iterator[t.Tuple[str, int]], str], t.Iterable[t.Tuple[str, int, bool]]]
+EXTERNAL_LEXERS: t.Dict[str, ExtLexerType] = {}
 
 
 @fix_pep_479
-def _iterescape(iterable):
+def _iterescape(iterable: t.Iterable[str]) -> t.Generator[str, None, None]:
     chars = iter(iterable)
     for char in chars:
         if char == '\\':
@@ -17,7 +20,7 @@ def _iterescape(iterable):
         yield char
 
 
-def _iterlinecount(iterable):
+def _iterlinecount(iterable: t.Iterable[str]) -> t.Generator[t.Tuple[str, int], None, None]:
     line = 1
     chars = iter(iterable)
     for char in chars:
@@ -27,7 +30,7 @@ def _iterlinecount(iterable):
 
 
 @fix_pep_479
-def _lex_file_object(file_obj):
+def _lex_file_object(file_obj: t.TextIO) -> t.Generator[t.Tuple[str, int, bool], None, None]:
     """
     Generates token tuples from an nginx config file object
 
@@ -37,9 +40,11 @@ def _lex_file_object(file_obj):
     token_line = 0  # the line the token starts on
     next_token_is_directive = True
 
-    it = itertools.chain.from_iterable(file_obj)
-    it = _iterescape(it)  # treat escaped characters differently
-    it = _iterlinecount(it)  # count the number of newline characters
+    it0: t.Iterator[str]
+    it0 = itertools.chain.from_iterable(file_obj)
+    it0 = _iterescape(it0)  # treat escaped characters differently
+    it: t.Iterator[t.Tuple[str, int]]
+    it = _iterlinecount(it0)  # count the number of newline characters
 
     for char, line in it:
         # handle whitespace
@@ -120,7 +125,7 @@ def _lex_file_object(file_obj):
         token += char
 
 
-def _balance_braces(tokens, filename=None):
+def _balance_braces(tokens: t.Iterable[t.Tuple[str, int, bool]], filename: t.Optional[str] = None) -> t.Generator[t.Tuple[str, int, bool], None, None]:
     """Raises syntax errors if braces aren't balanced"""
     depth = 0
 
@@ -143,7 +148,7 @@ def _balance_braces(tokens, filename=None):
         raise NgxParserSyntaxError(reason, filename, line)
 
 
-def lex(filename):
+def lex(filename: str) -> t.Generator[t.Tuple[str, int, bool], None, None]:
     """Generates tokens from an nginx config file"""
     with io.open(filename, mode='r', encoding='utf-8', errors='replace') as f:
         it = _lex_file_object(f)
@@ -152,6 +157,6 @@ def lex(filename):
             yield (token, line, quoted)
 
 
-def register_external_lexer(directives, lexer):
+def register_external_lexer(directives: t.Iterable[str], lexer: ExtLexerType) -> None:
     for directive in directives:
         EXTERNAL_LEXERS[directive] = lexer

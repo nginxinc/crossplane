@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
+import typing as t
+import py.path
 
 from crossplane.compat import basestring
 from crossplane.parser import parse
@@ -8,7 +10,7 @@ from crossplane.builder import build, _enquote
 here = os.path.dirname(__file__)
 
 
-def assert_equal_payloads(a, b, ignore_keys=()):
+def assert_equal_payloads(a: t.Any, b: t.Any, ignore_keys: t.Iterable[str] = ()) -> None:
     assert type(a) == type(b)
     if isinstance(a, list):
         assert len(a) == len(b)
@@ -25,7 +27,7 @@ def assert_equal_payloads(a, b, ignore_keys=()):
         assert a == b
 
 
-def compare_parsed_and_built(conf_dirname, conf_basename, tmpdir, **kwargs):
+def compare_parsed_and_built(conf_dirname: str, conf_basename: str, tmpdir: py.path.local, **kwargs: t.Any) -> None:
     original_dirname = os.path.join(here, 'configs', conf_dirname)
     original_path = os.path.join(original_dirname, conf_basename)
     original_payload = parse(original_path, **kwargs)

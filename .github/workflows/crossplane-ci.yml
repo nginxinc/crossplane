@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", pypy-3.6, pypy-3.7, pypy-3.8, pypy-3.9]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", pypy-3.6, pypy-3.7, pypy-3.8, pypy-3.9]
 
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 #v3

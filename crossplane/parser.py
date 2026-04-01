@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
+import typing as t
 import glob
 import os
 
 from .lexer import lex
 from .analyzer import analyze, enter_block_ctx
-from .errors import NgxParserDirectiveError
+from .errors import NgxParserBaseException, NgxParserDirectiveError
+from .typedefs import StatusType, DictResponse, DictError, DictFile, DictFileError, DictStatement
 
 # map of external / third-party directives to a parse function
-EXTERNAL_PARSERS = {}
+ErrorCallbackType = t.Callable[[Exception], t.Any]
+ExtParserType = t.Callable[[DictStatement, None, t.List[str], t.Tuple[str, ...], bool], None]
+EXTERNAL_PARSERS: t.Dict[str, ExtParserType] = {}
 
 
 # TODO: raise special errors for invalid "if" args
-def _prepare_if_args(stmt):
+def _prepare_if_args(stmt: DictStatement) -> None:
     """Removes parentheses from an "if" directive's arguments"""
     args = stmt['args']
     if args and args[0].startswith('(') and args[-1].endswith(')'):
@@ -22,9 +26,9 @@ def _prepare_if_args(stmt):
         args[:] = args[start:end]
 
 
-def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
-        comments=False, strict=False, combine=False, check_ctx=True,
-        check_args=True):
+def parse(filename: str, onerror: t.Optional[ErrorCallbackType] = None, catch_errors: bool=True, ignore:t.Container[str]=(), single:bool=False,
+        comments:bool=False, strict:bool=False, combine:bool=False, check_ctx:bool=True,
+        check_args:bool=True) -> DictResponse:
     """
     Parses an nginx config file and returns a nested dict payload
 
@@ -42,24 +46,24 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
     """
     config_dir = os.path.dirname(filename)
 
-    payload = {
+    payload: DictResponse = {
         'status': 'ok',
         'errors': [],
         'config': [],
     }
 
     # start with the main nginx config file/context
-    includes = [(filename, ())]  # stores (filename, config context) tuples
+    includes: t.List[t.Tuple[str, t.Tuple[str, ...]]] = [(filename, ())]  # stores (filename, config context) tuples
     included = {filename: 0} # stores {filename: array index} map
 
-    def _handle_error(parsing, e):
+    def _handle_error(parsing: DictFile, e: Exception) -> None:
         """Adds representaions of an error to the payload"""
         file = parsing['file']
         error = str(e)
         line = getattr(e, 'lineno', None)
 
-        parsing_error = {'error': error, 'line': line}
-        payload_error = {'file': file, 'error': error, 'line': line}
+        parsing_error: DictFileError = {'error': error, 'line': line}
+        payload_error: DictError = {'file': file, 'error': error, 'line': line}
         if onerror is not None:
             payload_error['callback'] = onerror(e)
 
@@ -69,10 +73,10 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
         payload['status'] = 'failed'
         payload['errors'].append(payload_error)
 
-    def _parse(parsing, tokens, ctx=(), consume=False):
+    def _parse(parsing: DictFile, tokens: t.Iterator[t.Tuple[str, int, bool]], ctx: t.Tuple[str, ...]=(), consume: bool = False) -> t.List[DictStatement]:
         """Recursively parses nginx config contexts"""
         fname = parsing['file']
-        parsed = []
+        parsed: t.List[DictStatement] = []
 
         # parse recursively by pulling from a flat stream of tokens
         for token, lineno, quoted in tokens:
@@ -91,6 +95,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
 
             # the first token should always(?) be an nginx directive
             directive = token
+            stmt: DictStatement
 
             if combine:
                 stmt = {
@@ -180,7 +185,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
                         fnames = [pattern]
                     except Exception as e:
                         fnames = []
-                        e.lineno = stmt['line']
+                        t.cast(NgxParserBaseException, e).lineno = stmt['line']
                         if catch_errors:
                             _handle_error(parsing, e)
                         else:
@@ -192,7 +197,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
                     if fname not in included:
                         included[fname] = len(includes)
                         includes.append((fname, ctx))
-                    index = included[fname]
+                    index: int = included[fname]
                     stmt['includes'].append(index)
 
             # if this statement terminated with '{' then it is a block
@@ -204,7 +209,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
 
             # add all comments found inside args after stmt is added
             for comment in comments_in_args:
-                comment_stmt = {
+                comment_stmt: DictStatement = {
                     'directive': '#',
                     'line': stmt['line'],
                     'args': [],
@@ -217,7 +222,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
     # the includes list grows as "include" directives are found in _parse
     for fname, ctx in includes:
         tokens = lex(fname)
-        parsing = {
+        parsing: DictFile = {
             'file': fname,
             'status': 'ok',
             'errors': [],
@@ -236,7 +241,7 @@ def parse(filename, onerror=None, catch_errors=True, ignore=(), single=False,
         return payload
 
 
-def _combine_parsed_configs(old_payload):
+def _combine_parsed_configs(old_payload: DictResponse) -> DictResponse:
     """
     Combines config files into one by using include directives.
 
@@ -245,7 +250,7 @@ def _combine_parsed_configs(old_payload):
     """
     old_configs = old_payload['config']
 
-    def _perform_includes(block):
+    def _perform_includes(block: t.Iterable[DictStatement]) -> t.Generator[DictStatement, None, None]:
         for stmt in block:
             if 'block' in stmt:
                 stmt['block'] = list(_perform_includes(stmt['block']))
@@ -257,7 +262,7 @@ def _combine_parsed_configs(old_payload):
             else:
                 yield stmt  # do not yield include stmt itself
 
-    combined_config = {
+    combined_config: DictFile = {
         'file': old_configs[0]['file'],
         'status': 'ok',
         'errors': [],
@@ -272,7 +277,7 @@ def _combine_parsed_configs(old_payload):
     first_config = old_configs[0]['parsed']
     combined_config['parsed'] += _perform_includes(first_config)
 
-    combined_payload = {
+    combined_payload: DictResponse = {
         'status': old_payload.get('status', 'ok'),
         'errors': old_payload.get('errors', []),
         'config': [combined_config]
@@ -280,7 +285,7 @@ def _combine_parsed_configs(old_payload):
     return combined_payload
 
 
-def register_external_parser(parser, directives):
+def register_external_parser(parser: ExtParserType, directives: t.Iterable[str]) -> None:
     """
     :param parser: parser function
     :param directives: list of directive strings

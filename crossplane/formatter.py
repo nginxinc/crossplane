@@ -4,7 +4,7 @@ from .builder import build
 from .parser import parse
 
 
-def format(filename, indent=4, tabs=False):
+def format(filename: str, indent: int = 4, tabs: bool = False) -> str:
     payload = parse(
         filename,
         comments=True,

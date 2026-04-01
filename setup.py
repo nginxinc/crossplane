@@ -17,7 +17,7 @@ from crossplane import (
 here = os.path.abspath(os.path.dirname(__file__))
 
 
-def get_readme():
+def get_readme() -> str:
     path = os.path.join(here, 'README.md')
     with io.open(path, encoding='utf-8') as f:
         return '\n' + f.read()
@@ -27,20 +27,20 @@ class UploadCommand(Command):
     """Support setup.py upload."""
 
     description = 'Build and publish the package.'
-    user_options = []
+    user_options: list[str] = []
 
     @staticmethod
-    def status(s):
+    def status(s: str) -> None:
         """Prints things in bold."""
         print('\033[1m{0}\033[0m'.format(s))
 
-    def initialize_options(self):
+    def initialize_options(self) -> None:
         pass
 
-    def finalize_options(self):
+    def finalize_options(self) -> None:
         pass
 
-    def run(self):
+    def run(self) -> None:
         try:
             self.status('Removing previous builds…')
             shutil.rmtree(os.path.join(here, 'dist'))
@@ -73,8 +73,6 @@ setup(
         'Intended Audience :: Information Technology',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',

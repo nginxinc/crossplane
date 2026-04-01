@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
+import typing as t
 
 
 class NgxParserBaseException(Exception):
-    def __init__(self, strerror, filename, lineno):
+    def __init__(self, strerror: str, filename: t.Optional[str], lineno: t.Optional[int]) -> None:
         self.args = (strerror, filename, lineno)
         self.filename = filename
         self.lineno = lineno
         self.strerror = strerror
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.lineno is not None:
             return '%s in %s:%s' % self.args
         else:

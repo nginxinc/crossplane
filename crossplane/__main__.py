@@ -3,7 +3,8 @@
 import io
 import os
 import sys
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
+import typing as t
+from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter, Namespace
 from traceback import format_exception
 
 from . import __version__
@@ -12,34 +13,37 @@ from .parser import parse as parse_file
 from .builder import build as build_string, build_files, _enquote, DELIMITERS
 from .formatter import format as format_file
 from .compat import json, input
+from .typedefs import DictStatement
 
 
-def _prompt_yes():
+def _prompt_yes() -> bool:
     try:
         return input('overwrite? (y/n [n]) ').lower().startswith('y')
     except (KeyboardInterrupt, EOFError):
         sys.exit(1)
 
 
-def _dump_payload(obj, fp, indent):
-    kwargs = {'indent': indent}
+def _dump_payload(obj: t.Any, fp: t.TextIO, indent: t.Optional[int]) -> None:
+    kwargs: t.Dict[str, t.Any] = {'indent': indent}
     if indent is None:
         kwargs['separators'] = ',', ':'
     fp.write(json.dumps(obj, **kwargs) + u'\n')
 
 
-def parse(filename, out, indent=None, catch=None, tb_onerror=None, ignore='',
-          single=False, comments=False, strict=False, combine=False):
+def parse(filename: str, out: str, indent: t.Optional[int] = None,
+          catch: t.Optional[bool] = None, tb_onerror: t.Optional[bool] = None,
+          ignore: str = '', single: bool = False, comments: bool = False,
+          strict: bool = False, combine: bool = False) -> None:
 
-    ignore = ignore.split(',') if ignore else []
+    ignored: t.List[str] = ignore.split(',') if ignore else []
 
-    def callback(e):
+    def callback(e: Exception) -> str:
         exc = sys.exc_info() + (10,)
-        return ''.join(format_exception(*exc)).rstrip()
+        return ''.join(format_exception(*exc)).rstrip()  # type: ignore[call-overload, arg-type, unused-ignore]
 
-    kwargs = {
+    kwargs: t.Dict[str, t.Any] = {
         'catch_errors': catch,
-        'ignore': ignore,
+        'ignore': ignored,
         'combine': combine,
         'single': single,
         'comments': comments,
@@ -57,8 +61,9 @@ def parse(filename, out, indent=None, catch=None, tb_onerror=None, ignore='',
         o.close()
 
 
-def build(filename, dirname=None, force=False, indent=4, tabs=False,
-          header=True, stdout=False, verbose=False):
+def build(filename: str, dirname: t.Optional[str] = None, force: bool = False,
+          indent: int = 4, tabs: bool = False, header: bool = True,
+          stdout: bool = False, verbose: bool = False) -> None:
 
     if dirname is None:
         dirname = os.getcwd()
@@ -108,8 +113,8 @@ def build(filename, dirname=None, force=False, indent=4, tabs=False,
             print('wrote to ' + path)
 
 
-def lex(filename, out, indent=None, line_numbers=False):
-    payload = list(lex_file(filename))
+def lex(filename: str, out: str, indent: t.Optional[int] = None, line_numbers: bool = False) -> None:
+    payload: t.List[t.Any] = list(lex_file(filename))
     if line_numbers:
         payload = [(token, lineno) for token, lineno, quoted in payload]
     else:
@@ -121,7 +126,7 @@ def lex(filename, out, indent=None, line_numbers=False):
         o.close()
 
 
-def minify(filename, out):
+def minify(filename: str, out: str) -> None:
     payload = parse_file(
         filename,
         single=True,
@@ -132,7 +137,7 @@ def minify(filename, out):
         strict=False
     )
     o = sys.stdout if out is None else io.open(out, 'w', encoding='utf-8')
-    def write_block(block):
+    def write_block(block: t.List[DictStatement]) -> None:
         for stmt in block:
             o.write(_enquote(stmt['directive']))
             if stmt['directive'] == 'if':
@@ -152,7 +157,7 @@ def minify(filename, out):
         o.close()
 
 
-def format(filename, out, indent=4, tabs=False):
+def format(filename: str, out: str, indent: int = 4, tabs: bool = False) -> None:
     output = format_file(filename, indent=indent, tabs=tabs)
     o = sys.stdout if out is None else io.open(out, 'w', encoding='utf-8')
     try:
@@ -162,7 +167,7 @@ def format(filename, out, indent=4, tabs=False):
 
 
 class _SubparserHelpFormatter(RawDescriptionHelpFormatter):
-    def _format_action(self, action):
+    def _format_action(self, action: Action) -> str:
         line = super(RawDescriptionHelpFormatter, self)._format_action(action)
 
         if action.nargs == 'A...':
@@ -175,7 +180,7 @@ class _SubparserHelpFormatter(RawDescriptionHelpFormatter):
         return line
 
 
-def parse_args(args=None):
+def parse_args(args: t.Optional[t.List[str]] = None) -> Namespace:
     parser = ArgumentParser(
         formatter_class=_SubparserHelpFormatter,
         description='various operations for nginx config files',
@@ -184,7 +189,7 @@ def parse_args(args=None):
     parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + __version__)
     subparsers = parser.add_subparsers(title='commands')
 
-    def create_subparser(function, help):
+    def create_subparser(function: t.Callable[..., None], help: str) -> ArgumentParser:
         name = function.__name__
         prog = 'crossplane ' + name
         p = subparsers.add_parser(name, prog=prog, help=help, description=help)
@@ -231,11 +236,11 @@ def parse_args(args=None):
     g.add_argument('-i', '--indent', type=int, metavar='NUM', help='number of spaces to indent output', default=4)
     g.add_argument('-t', '--tabs', action='store_true', help='indent with tabs instead of spaces')
 
-    def help(command):
-        if command not in parser._actions[-1].choices:
+    def help(command: str) -> None:
+        if command not in t.cast(t.Dict[str, t.Any], parser._actions[-1].choices):
             parser.error('unknown command %r' % command)
         else:
-            parser._actions[-1].choices[command].print_help()
+            t.cast(t.Dict[str, t.Any], parser._actions[-1].choices)[command].print_help()
 
     p = create_subparser(help, 'show help for commands')
     p.add_argument('command', help='command to show help for')
@@ -249,7 +254,7 @@ def parse_args(args=None):
     return parsed
 
 
-def main():
+def main() -> None:
     kwargs = parse_args().__dict__
     func = kwargs.pop('_subcommand')
     func(**kwargs)

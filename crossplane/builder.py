@@ -1,16 +1,24 @@
 # -*- coding: utf-8 -*-
+import typing as t
 import codecs
 import os
 import re
 
 from .compat import PY2
+from .typedefs import StatusType, DictResponse, DictFile, DictStatement
 
+if t.TYPE_CHECKING:
+    MatchBytes = re.Match[bytes]
+else:
+    MatchBytes = re.Match
+
+ExtBuilderType = t.Callable[[DictStatement, str, int, bool], str]
 DELIMITERS = ('{', '}', ';')
-EXTERNAL_BUILDERS = {}
+EXTERNAL_BUILDERS: t.Dict[str, ExtBuilderType] = {}
 ESCAPE_SEQUENCES_RE = re.compile(r'(\\x[0-9a-f]{2}|\\[0-7]{1,3})')
 
 
-def _escape(string):
+def _escape(string: str) -> t.Generator[str, None, None]:
     prev, char = '', ''
     for char in string:
         if prev == '\\' or prev + char == '${':
@@ -26,7 +34,7 @@ def _escape(string):
         yield char
 
 
-def _needs_quotes(string):
+def _needs_quotes(string: str) -> bool:
     if string == '':
         return True
 
@@ -50,12 +58,11 @@ def _needs_quotes(string):
 
     return char in ('\\', '$') or expanding
 
+def _replace_escape_sequences(match: MatchBytes) -> str:
+    return t.cast(str, match.group(1).decode('string-escape'))
 
-def _replace_escape_sequences(match):
-    return match.group(1).decode('string-escape')
 
-
-def _enquote(arg):
+def _enquote(arg: str) -> str:
     if not _needs_quotes(arg):
         return arg
 
@@ -71,7 +78,7 @@ def _enquote(arg):
     return arg
 
 
-def build(payload, indent=4, tabs=False, header=False):
+def build(payload: t.List[DictStatement], indent: int = 4, tabs: bool = False, header: bool = False) -> str:
     padding = '\t' if tabs else ' ' * indent
 
     head = ''
@@ -81,7 +88,7 @@ def build(payload, indent=4, tabs=False, header=False):
         head += '# https://github.com/nginxinc/crossplane/issues\n'
         head += '\n'
 
-    def _build_block(output, block, depth, last_line):
+    def _build_block(output: str, block: t.List[DictStatement], depth: int, last_line: int) -> str:
         margin = padding * depth
 
         for stmt in block:
@@ -123,7 +130,7 @@ def build(payload, indent=4, tabs=False, header=False):
     return head + body
 
 
-def build_files(payload, dirname=None, indent=4, tabs=False, header=False):
+def build_files(payload: DictResponse, dirname: t.Optional[str] = None, indent: int = 4, tabs: bool = False, header: bool = False) -> None:
     """
     Uses a full nginx config payload (output of crossplane.parse) to build
     config files, then writes those files to disk.
@@ -149,6 +156,6 @@ def build_files(payload, dirname=None, indent=4, tabs=False, header=False):
             fp.write(output)
 
 
-def register_external_builder(builder, directives):
+def register_external_builder(builder: ExtBuilderType, directives: t.Iterable[str]) -> None:
     for directive in directives:
         EXTERNAL_BUILDERS[directive] = builder

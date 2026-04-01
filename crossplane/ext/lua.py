@@ -1,20 +1,24 @@
 # -*- coding: utf-8 -*-
+import typing as t
 from crossplane.lexer import register_external_lexer
 from crossplane.builder import register_external_builder
 from crossplane.compat import fix_pep_479
 from crossplane.errors import NgxParserBaseException
 from crossplane.ext.abstract import CrossplaneExtension
+from crossplane.typedefs import StatusType, DictResponse, DictFile, DictStatement
+
+T = t.TypeVar('T')
 
 
-class EmplaceIter:
-    def __init__(self, it):
+class EmplaceIter(t.Generic[T]):
+    def __init__(self, it: t.Iterator[T]) -> None:
         self.it = it
-        self.ret = []
+        self.ret: t.List[T] = []
 
-    def __iter__(self):
+    def __iter__(self) -> t.Iterator[T]:
         return self
 
-    def __next__(self):
+    def __next__(self) -> T:
         if len(self.ret) > 0:
             v = self.ret.pop()
             return v
@@ -22,7 +26,7 @@ class EmplaceIter:
 
     next = __next__
 
-    def put_back(self, v):
+    def put_back(self, v: T) -> None:
         self.ret.append(v)
 
 
@@ -50,12 +54,12 @@ class LuaBlockPlugin(CrossplaneExtension):
         'ssl_session_store_by_lua_block': [],
     }
 
-    def register_extension(self):
+    def register_extension(self) -> None:
         register_external_lexer(directives=self.directives, lexer=self.lex)
         register_external_builder(directives=self.directives, builder=self.build)
 
     @fix_pep_479
-    def lex(self, char_iterator, directive):
+    def lex(self, char_iterator: t.Iterator[t.Tuple[str, int]], directive: str) -> t.Generator[t.Tuple[str, int, bool], None, None]:
         if directive == "set_by_lua_block":
             # https://github.com/openresty/lua-nginx-module#set_by_lua_block
             # The sole *_by_lua_block directive that has an arg
@@ -123,10 +127,10 @@ class LuaBlockPlugin(CrossplaneExtension):
                 raise StopIteration
             token += char
 
-    def parse(self, stmt, parsing, tokens, ctx=(), consume=False):
+    def parse(self, stmt: DictStatement, parsing: None, tokens: t.List[str], ctx: t.Tuple[str, ...] = (), consume: bool=False) -> None:
         pass
 
-    def build(self, stmt, padding, indent=4, tabs=False):
+    def build(self, stmt: DictStatement, padding: str, indent: int=4, tabs: bool=False) -> str:
         built = stmt['directive']
         if built == 'set_by_lua_block':
             block = stmt['args'][1]

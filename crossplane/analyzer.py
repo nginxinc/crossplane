@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import typing as t
 from .errors import (
     NgxParserDirectiveUnknownError,
     NgxParserDirectiveContextError,
     NgxParserDirectiveArgumentsError
 )
+from .typedefs import StatusType, DictResponse, DictFile, DictStatement
 
 # bit masks for different directive argument styles
 NGX_CONF_NOARGS = 0x00000001  # 0 args
@@ -67,7 +69,7 @@ Each bit mask describes these behaviors:
 Since some directives can have different behaviors in different contexts, we
   use lists of bit masks, each describing a valid way to use the directive.
 
-Definitions for directives that're available in the open source version of 
+Definitions for directives that're available in the open source version of
   nginx were taken directively from the source code. In fact, the variable
   names for the bit masks defined above were taken from the nginx source code.
 
@@ -2111,7 +2113,7 @@ CONTEXTS = {
 }
 
 
-def enter_block_ctx(stmt, ctx):
+def enter_block_ctx(stmt: DictStatement, ctx: t.Tuple[str, ...]) -> t.Tuple[str, ...]:
     # don't nest because NGX_HTTP_LOC_CONF just means "location block in http"
     if ctx and ctx[0] == 'http' and stmt['directive'] == 'location':
         return ('http', 'location')
@@ -2120,8 +2122,8 @@ def enter_block_ctx(stmt, ctx):
     return ctx + (stmt['directive'],)
 
 
-def analyze(fname, stmt, term, ctx=(), strict=False, check_ctx=True,
-        check_args=True):
+def analyze(fname: str, stmt: DictStatement, term: str, ctx: t.Tuple[str, ...] = (), strict: bool = False, check_ctx: bool = True,
+        check_args: bool = True) -> None:
 
     directive = stmt['directive']
     line = stmt['line']
@@ -2151,7 +2153,7 @@ def analyze(fname, stmt, term, ctx=(), strict=False, check_ctx=True,
     if not check_args:
         return
 
-    valid_flag = lambda x: x.lower() in ('on', 'off')
+    valid_flag: t.Callable[[str], bool] = lambda x: x.lower() in ('on', 'off')
 
     # do this in reverse because we only throw errors at the end if no masks
     # are valid, and typically the first bit mask is what the parser expects
@@ -2181,7 +2183,7 @@ def analyze(fname, stmt, term, ctx=(), strict=False, check_ctx=True,
     raise NgxParserDirectiveArgumentsError(reason % directive, fname, line)
 
 
-def register_external_directives(directives):
-    for directive, bitmasks in directives.iteritems():
+def register_external_directives(directives: t.Dict[str, t.List[int]]) -> None:
+    for directive, bitmasks in directives.items():
         if bitmasks:
             DIRECTIVES[directive] = bitmasks
