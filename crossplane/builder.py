@@ -71,7 +71,7 @@ def _enquote(arg):
     return arg
 
 
-def build(payload, indent=4, tabs=False, header=False):
+def build(payload, indent=4, tabs=False, header=False, align=False, spacious=False):
     padding = '\t' if tabs else ' ' * indent
 
     head = ''
@@ -84,9 +84,18 @@ def build(payload, indent=4, tabs=False, header=False):
     def _build_block(output, block, depth, last_line):
         margin = padding * depth
 
+        if len(block) > 0:
+            max_directive_length = max(len(stmt['directive']) for stmt in block)
+
         for stmt in block:
             directive = _enquote(stmt['directive'])
             line = stmt.get('line', 0)
+
+            directive_padding = (
+                (max_directive_length + 1 - len(directive)) * ' '
+                if align and stmt.get('block') is None
+                else ' '
+            )
 
             if directive == '#' and line == last_line:
                 output += ' #' + stmt['comment']
@@ -102,7 +111,7 @@ def build(payload, indent=4, tabs=False, header=False):
                 if directive == 'if':
                     built = 'if (' + ' '.join(args) + ')'
                 elif args:
-                    built = directive + ' ' + ' '.join(args)
+                    built = directive + directive_padding + ' '.join(args)
                 else:
                     built = directive
 
@@ -112,6 +121,9 @@ def build(payload, indent=4, tabs=False, header=False):
                     built += ' {'
                     built = _build_block(built, stmt['block'], depth+1, line)
                     built += '\n' + margin + '}'
+
+            if spacious and stmt.get('block') is not None and line - 1 != last_line:
+                output += '\n'
 
             output += ('\n' if output else '') + margin + built
             last_line = line

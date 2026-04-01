@@ -4,7 +4,7 @@ from .builder import build
 from .parser import parse
 
 
-def format(filename, indent=4, tabs=False):
+def format(filename, indent=4, tabs=False, align=False, spacious=False):
     payload = parse(
         filename,
         comments=True,
@@ -18,5 +18,6 @@ def format(filename, indent=4, tabs=False):
         raise NgxParserBaseException(e['error'], e['file'], e['line'])
 
     parsed = payload['config'][0]['parsed']
-    output = build(parsed, indent=indent, tabs=tabs)
+    output = build(parsed, indent=indent, tabs=tabs,
+                   align=align, spacious=spacious)
     return output

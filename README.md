@@ -431,16 +431,19 @@ formatting tool. If that is what you are looking for, then you may want to
 look writing your own using crossplane's Python API.
 
 ```
-usage: crossplane format [-h] [-o OUT] [-i NUM | -t] filename
+usage: crossplane format [-h] [--align] [--spacious] [-o OUT | -w] [-i NUM | -t] filename
 
 formats an nginx config file
 
 positional arguments:
   filename              the nginx config file
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
+  --align               align directives within blocks
+  --spacious            add line breaks after blocks
   -o OUT, --out OUT     write output to a file
+  -w, --write           write output to a source file
   -i NUM, --indent NUM  number of spaces to indent output
   -t, --tabs            indent with tabs instead of spaces
 ```

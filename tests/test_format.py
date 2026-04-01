@@ -66,6 +66,66 @@ def test_format_not_main_file():
     ])
 
 
+def test_format_align_option():
+    dirname = os.path.join(here, 'configs', 'many-directives')
+    config = os.path.join(dirname, 'nginx.conf')
+    output = crossplane.format(config, align=True)
+    assert output == '\n'.join([
+        'server {',
+        '    listen              443 ssl;',
+        '    ssl_certificate     fullchain.pem;',
+        '    ssl_certificate_key privite.pem;',
+        '    server_name         _;',
+        '    index               index.html;',
+        '    root                /public;',
+        '    charset             utf-8;',
+        '    expires             $expires;',
+        '}',
+    ])
+
+
+def test_format_just_spacious_option():
+    dirname = os.path.join(here, 'configs', 'many-directives')
+    config = os.path.join(dirname, 'with-blocks.conf')
+    output = crossplane.format(config, spacious=True)
+    assert output == '\n'.join([
+        'server {',
+        '    location ~ \d {',
+        '        image_filter_buffer 5M;',
+        '        image_filter_interlace on;',
+        '        image_filter_jpeg_quality 75;',
+        '    }',
+        '',
+        '    location ~ \d {',
+        '        image_filter_buffer 5M;',
+        '        image_filter_interlace on;',
+        '        image_filter_jpeg_quality 75;',
+        '    }',
+        '}',
+    ])
+
+
+def test_format_spacious_option_with_align():
+    dirname = os.path.join(here, 'configs', 'many-directives')
+    config = os.path.join(dirname, 'with-blocks.conf')
+    output = crossplane.format(config, align=True, spacious=True)
+    assert output == '\n'.join([
+        'server {',
+        '    location ~ \d {',
+        '        image_filter_buffer       5M;',
+        '        image_filter_interlace    on;',
+        '        image_filter_jpeg_quality 75;',
+        '    }',
+        '',
+        '    location ~ \d {',
+        '        image_filter_buffer       5M;',
+        '        image_filter_interlace    on;',
+        '        image_filter_jpeg_quality 75;',
+        '    }',
+        '}',
+    ])
+
+
 def test_format_args_not_analyzed():
     dirname = os.path.join(here, 'configs', 'bad-args')
     config = os.path.join(dirname, 'nginx.conf')
