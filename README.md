@@ -13,13 +13,9 @@
   - [Command Line Interface](#command-line-interface)
       - [crossplane parse](#crossplane-parse)
       - [crossplane build](#crossplane-build)
-      - [crossplane lex](#crossplane-lex)
-      - [crossplane format](#crossplane-format)
-      - [crossplane minify](#crossplane-minify)
   - [Python Module](#python-module)
       - [crossplane.parse()](#crossplaneparse)
       - [crossplane.build()](#crossplanebuild)
-      - [crossplane.lex()](#crossplanelex)
   - [Other Languages](#other-languages)
 
 ## Install
@@ -367,110 +363,11 @@ optional arguments:
   --stdout              write configs to stdout instead
 ```
 
-### crossplane lex
-
-This command takes an NGINX config file, splits it into tokens by
-removing whitespace and comments, and dumps the list of tokens as a JSON
-array.
-
-```
-usage: crossplane lex [-h] [-o OUT] [-i NUM] [-n] filename
-
-lexes tokens from an nginx config file
-
-positional arguments:
-  filename              the nginx config file
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -o OUT, --out OUT     write output to a file
-  -i NUM, --indent NUM  number of spaces to indent output
-  -n, --line-numbers    include line numbers in json payload
-```
-
-#### Example
-
-Passing in this NGINX config file at `/etc/nginx/nginx.conf`:
-
-```nginx
-events {
-    worker_connections 1024;
-}
-
-http {
-    include conf.d/*.conf;
-}
-```
-
-By running:
-
-    crossplane lex /etc/nginx/nginx.conf
-
-Will result in this JSON
-output:
-
-```js
-["events","{","worker_connections","1024",";","}","http","{","include","conf.d/*.conf",";","}"]
-```
-
-However, if you decide to use the `--line-numbers` flag, your output
-will look
-like:
-
-```js
-[["events",1],["{",1],["worker_connections",2],["1024",2],[";",2],["}",3],["http",5],["{",5],["include",6],["conf.d/*.conf",6],[";",6],["}",7]]
-```
-
-### crossplane format
-
-This is a quick and dirty tool that uses [crossplane
-parse](#crossplane-parse) internally to format an NGINX config file.
-It serves the purpose of demonstrating what you can do with `crossplane`'s
-parsing abilities. It is not meant to be a fully fleshed out, feature-rich
-formatting tool. If that is what you are looking for, then you may want to
-look writing your own using crossplane's Python API.
-
-```
-usage: crossplane format [-h] [-o OUT] [-i NUM | -t] filename
-
-formats an nginx config file
-
-positional arguments:
-  filename              the nginx config file
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -o OUT, --out OUT     write output to a file
-  -i NUM, --indent NUM  number of spaces to indent output
-  -t, --tabs            indent with tabs instead of spaces
-```
-
-### crossplane minify
-
-This is a simple and fun little tool that uses [crossplane
-lex](#crossplane-lex) internally to remove as much whitespace from an
-NGINX config file as possible without affecting what it does. It can't
-imagine it will have much of a use to most people, but it demonstrates
-the kinds of things you can do with `crossplane`'s lexing abilities.
-
-```
-usage: crossplane minify [-h] [-o OUT] filename
-
-removes all whitespace from an nginx config
-
-positional arguments:
-  filename           the nginx config file
-
-optional arguments:
-  -h, --help         show this help message and exit
-  -o OUT, --out OUT  write output to a file
-```
-
 ## Python Module
 
 In addition to the command line tool, you can import `crossplane` as a
 python module. There are two basic functions that the module will
-provide you: `parse` and `lex`.
+provide you: `parse` and `build`.
 
 ### crossplane.parse()
 
@@ -501,19 +398,6 @@ config = crossplane.build(
 
 This will return a single string that contains an entire NGINX config
 file.
-
-### crossplane.lex()
-
-```python
-import crossplane
-tokens = crossplane.lex('/etc/nginx/nginx.conf')
-```
-
-`crossplane.lex` generates 2-tuples. Inserting these pairs into a list
-will result in a long list similar to what you can see in the
-[crossplane lex](#crossplane-lex) section when the `--line-numbers` flag
-is used, except it will obviously be a Python list of tuples and not one
-giant JSON string.
 
 ## Other Languages
 
