@@ -4,6 +4,7 @@ from .lexer import lex
 from .builder import build
 from .formatter import format
 from .ext.lua import LuaBlockPlugin
+from .ext.by_lua import LuaPlugin
 
 __all__ = ['parse', 'lex', 'build', 'format']
 
@@ -19,6 +20,6 @@ __email__ = 'aluttik@gmail.com'
 __license__ = 'Apache 2.0'
 __copyright__ = 'Copyright 2018 NGINX, Inc.'
 
-default_enabled_extensions = [LuaBlockPlugin()]
+default_enabled_extensions = [LuaBlockPlugin(), LuaPlugin()]
 for extension in default_enabled_extensions:
     extension.register_extension()
